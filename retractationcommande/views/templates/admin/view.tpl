@@ -41,10 +41,10 @@
           <td>{if $rc_request->within_deadline}<span class="badge badge-success">Oui</span>{else}<span class="badge badge-danger">Non</span>{/if}</td>
         </tr>
         {if $rc_request->message}
-          <tr><td><strong>Motif du client</strong></td><td>{$rc_request->message|nl2br nofilter}</td></tr>
+          <tr><td><strong>Motif du client</strong></td><td>{$rc_request->message|escape:'html':'UTF-8'|nl2br nofilter}</td></tr>
         {/if}
         {if $rc_request->refusal_reason}
-          <tr><td><strong>Motif du refus</strong></td><td>{$rc_request->refusal_reason|nl2br nofilter}</td></tr>
+          <tr><td><strong>Motif du refus</strong></td><td>{$rc_request->refusal_reason|escape:'html':'UTF-8'|nl2br nofilter}</td></tr>
         {/if}
         {if $rc_photos|@count}
           <tr>

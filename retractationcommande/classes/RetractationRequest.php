@@ -503,10 +503,13 @@ class RetractationRequest extends ObjectModel
 
                 return $result;
             }
-            $result['deadline_text'] = Context::getContext()->getTranslator()->trans(
-                'commande non encore livrée — délai de 14 jours à compter du lendemain de la livraison',
-                [],
-                'Modules.Retractationcommande.Shop'
+            $result['deadline_text'] = sprintf(
+                Context::getContext()->getTranslator()->trans(
+                    'commande non encore livrée — délai de %d jours à compter du lendemain de la livraison',
+                    [],
+                    'Modules.Retractationcommande.Shop'
+                ),
+                RetractationDelai::getDelaiJours()
             );
         }
 

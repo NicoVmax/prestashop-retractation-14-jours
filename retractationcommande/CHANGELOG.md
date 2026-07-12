@@ -2,6 +2,15 @@
 
 Toutes les évolutions notables du module. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/).
 
+## [1.4.5] — 2026-07-12
+
+### Corrigé
+- **Erreur 500 au dépôt d'une demande après mise à jour** : la colonne `photos` (introduite en 1.4.4) n'était créée qu'à l'installation, jamais lors d'une montée de version PrestaShop — d'où une erreur SQL « Unknown column 'photos' » sur les boutiques ayant migré. Ajout d'un script d'upgrade PrestaShop natif (`upgrade/upgrade-1.4.5.php`) qui crée la colonne pour toutes les mises à jour (idempotent).
+- **Délai personnalisé non repris dans le formulaire** : pour une commande non encore livrée, le texte du délai affiché au client était figé à « 14 jours » au lieu de reprendre le délai configuré en back-office. Il utilise désormais la valeur réelle (`RETRACTATION_DELAY_DAYS`). Le cas des commandes livrées (qui affiche une date d'échéance) était déjà correct.
+
+### Sécurité
+- **XSS stocké en back-office** : le motif du client et le motif de refus étaient affichés sur la fiche de la demande sans échappement HTML. Un motif saisi côté client pouvait contenir du HTML/JS exécuté à l'ouverture de la fiche par un agent SAV. Les deux champs sont désormais échappés (`|escape:'html':'UTF-8'` avant `nl2br`), sans changement d'affichage pour les contenus légitimes.
+
 ## [1.4.4] — 2026-06-29
 
 ### Ajouté

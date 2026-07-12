@@ -39,7 +39,7 @@ class RetractationCommande extends Module
     {
         $this->name = 'retractationcommande';
         $this->tab = 'administration';
-        $this->version = '1.4.4';
+        $this->version = '1.4.5';
         $this->author = 'Magic Garden';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = ['min' => '1.7.6.0', 'max' => '9.99.99'];
