@@ -26,7 +26,7 @@
   function buildButton(idOrder, token) {
     var btn = document.createElement('a');
     btn.href = '#';
-    btn.className = 'retractation-btn';
+    btn.className = 'retractation-btn cssTrans btn btn-secondary';
     btn.textContent = cfg.labels.button;
     btn.setAttribute('data-id-order', idOrder);
     btn.setAttribute('data-rtoken', token);
@@ -241,9 +241,23 @@
   /* Bind                                                                */
   /* ------------------------------------------------------------------ */
 
+  /* Certains thèmes ne placent pas le fil d'ariane dans un conteneur : sur la
+     page de rétractation (détectée via .retractation-page), on lui applique la
+     classe .container du thème pour l'aligner sur le contenu, sans taille en dur. */
+  function alignBreadcrumb() {
+    if (!document.querySelector('.retractation-page')) {
+      return;
+    }
+    var bc = document.querySelector('nav.breadcrumb, .breadcrumb');
+    if (bc && !bc.classList.contains('container')) {
+      bc.classList.add('container');
+    }
+  }
+
   function init() {
     injectHistoryButtons();
     hideNativeReturnForm();
+    alignBreadcrumb();
     document.addEventListener('click', function (e) {
       var btn = e.target.closest('.retractation-btn');
       if (!btn) {

@@ -50,14 +50,57 @@
           <tr>
             <td><strong>Photos du client</strong></td>
             <td>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;" id="rc-photo-thumbs">
                 {foreach $rc_photos as $purl}
-                  <a href="{$purl|escape:'html':'UTF-8'}" target="_blank" rel="noopener" title="Ouvrir en grand">
+                  <a href="{$purl|escape:'html':'UTF-8'}" class="rc-photo-thumb" title="Agrandir">
                     <img src="{$purl|escape:'html':'UTF-8'}" alt="Photo rétractation" loading="lazy"
                          style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #ddd;">
                   </a>
                 {/foreach}
               </div>
+
+              <div id="rc-lightbox" class="rc-lightbox" aria-hidden="true">
+                <span class="rc-lb-close" title="Fermer">&times;</span>
+                <span class="rc-lb-nav rc-lb-prev" title="Précédente">&#10094;</span>
+                <img class="rc-lb-img" src="" alt="">
+                <span class="rc-lb-nav rc-lb-next" title="Suivante">&#10095;</span>
+                <div class="rc-lb-counter"></div>
+              </div>
+              <style>
+                .rc-photo-thumb { cursor: zoom-in; }
+                .rc-lightbox { display:none; position:fixed; z-index:100000; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.85); }
+                .rc-lightbox.open { display:block; }
+                .rc-lb-img { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); max-width:90vw; max-height:88vh; border-radius:6px; box-shadow:0 6px 30px rgba(0,0,0,.5); }
+                .rc-lb-close { position:absolute; top:14px; right:24px; color:#fff; font-size:40px; line-height:1; cursor:pointer; z-index:2; }
+                .rc-lb-nav { position:absolute; top:50%; transform:translateY(-50%); color:#fff; font-size:46px; cursor:pointer; padding:10px 18px; user-select:none; z-index:2; }
+                .rc-lb-prev { left:8px; } .rc-lb-next { right:8px; }
+                .rc-lb-nav:hover, .rc-lb-close:hover { color:#8fd19e; }
+                .rc-lb-counter { position:absolute; bottom:16px; left:50%; transform:translateX(-50%); color:#fff; font-size:13px; background:rgba(0,0,0,.4); padding:4px 10px; border-radius:12px; }
+              </style>
+              <script>
+              (function(){
+                var thumbs = [].slice.call(document.querySelectorAll('#rc-photo-thumbs .rc-photo-thumb'));
+                var lb = document.getElementById('rc-lightbox');
+                if (!thumbs.length || !lb || lb.getAttribute('data-init')) { return; }
+                lb.setAttribute('data-init', '1');
+                var urls = thumbs.map(function(a){ return a.getAttribute('href'); });
+                var img = lb.querySelector('.rc-lb-img'), counter = lb.querySelector('.rc-lb-counter'), cur = 0;
+                function show(i){ cur = (i + urls.length) % urls.length; img.src = urls[cur]; counter.textContent = (cur + 1) + ' / ' + urls.length; }
+                function openLb(i){ show(i); lb.classList.add('open'); lb.setAttribute('aria-hidden', 'false'); }
+                function closeLb(){ lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); img.src = ''; }
+                thumbs.forEach(function(a, i){ a.addEventListener('click', function(e){ e.preventDefault(); openLb(i); }); });
+                lb.querySelector('.rc-lb-close').addEventListener('click', closeLb);
+                lb.querySelector('.rc-lb-prev').addEventListener('click', function(e){ e.stopPropagation(); show(cur - 1); });
+                lb.querySelector('.rc-lb-next').addEventListener('click', function(e){ e.stopPropagation(); show(cur + 1); });
+                lb.addEventListener('click', function(e){ if (e.target === lb) { closeLb(); } });
+                document.addEventListener('keydown', function(e){
+                  if (!lb.classList.contains('open')) { return; }
+                  if (e.key === 'Escape') { closeLb(); }
+                  else if (e.key === 'ArrowLeft') { show(cur - 1); }
+                  else if (e.key === 'ArrowRight') { show(cur + 1); }
+                });
+              })();
+              </script>
             </td>
           </tr>
         {/if}

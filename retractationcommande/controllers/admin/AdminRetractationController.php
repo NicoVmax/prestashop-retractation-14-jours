@@ -243,6 +243,10 @@ class AdminRetractationController extends ModuleAdminController
         } else {
             // Livrée ou en cours d'acheminement : procédure de retour.
             $request->setNativeReturnState(RetractationCommande::OR_STATE_WAITING_PACKAGE);
+
+            $order = new Order((int) $request->id_order);
+            $customer = new Customer((int) $request->id_customer);
+
             // Procédure (texte marchand) + adresse de retour configurée (centre
             // logistique…) si renseignée — ajoutée au contenu sans toucher aux templates.
             $procedure = (string) Configuration::get('RETRACTATION_PROCEDURE_TEXT');
@@ -251,11 +255,29 @@ class AdminRetractationController extends ModuleAdminController
                 $procedure .= '<p style="margin-top:14px"><strong>' . $this->l('Adresse de retour') . ' :</strong><br>'
                     . nl2br(htmlspecialchars($returnAddress, ENT_QUOTES, 'UTF-8')) . '</p>';
             }
+            // Instructions spécifiques (config) — affichées dans l'e-mail ET sur le bon de retour.
+            $instructions = trim((string) Configuration::get('RETRACTATION_RETURN_INSTRUCTIONS'));
+            if ($instructions !== '') {
+                $procedure .= '<p style="margin-top:14px"><strong>' . $this->l('Instructions') . ' :</strong><br>' . $instructions . '</p>';
+            }
+
+            // Bon de retour PDF joint + consigne d'impression / collage sur le colis.
+            $attachment = null;
+            if (Validate::isLoadedObject($order) && Validate::isLoadedObject($customer)) {
+                $attachment = $this->buildReturnSlipAttachment($request, $order, $customer);
+            }
+            if ($attachment) {
+                $procedure .= '<p style="margin-top:14px; padding:10px 12px; border:2px solid #2e7d32; background:#eef5ee; color:#1b4d20;"><strong>'
+                    . $this->l('Un bon de retour est joint à cet e-mail (PDF). Imprimez-le et collez-le sur l\'extérieur du colis : sans ce bon, votre retour ne pourra pas être accepté par notre service logistique.')
+                    . '</strong></p>';
+            }
+
             $this->sendCustomerEmail(
                 $request,
                 'retractation_procedure',
                 $this->l('Votre rétractation est validée — procédure de retour'),
-                ['{procedure}' => $procedure]
+                ['{procedure}' => $procedure],
+                $attachment
             );
             $this->confirmations[] = ($phase === 'shipped')
                 ? $this->l('Demande validée (commande en cours d\'acheminement) : la procédure de retour a été envoyée au client. Il pourra refuser le colis ou le renvoyer.')
@@ -370,7 +392,7 @@ class AdminRetractationController extends ModuleAdminController
         exit;
     }
 
-    protected function sendCustomerEmail(RetractationRequest $request, $template, $subject, array $extraVars = [])
+    protected function sendCustomerEmail(RetractationRequest $request, $template, $subject, array $extraVars = [], $attachment = null)
     {
         $order = new Order((int) $request->id_order);
         $customer = new Customer((int) $request->id_customer);
@@ -396,11 +418,54 @@ class AdminRetractationController extends ModuleAdminController
             $customer->firstname . ' ' . $customer->lastname,
             null,
             null,
-            null,
+            $attachment,
             null,
             _PS_MODULE_DIR_ . 'retractationcommande/mails/',
             false,
             (int) $order->id_shop
         );
+    }
+
+    /**
+     * Génère le PDF « bon de retour » (à imprimer et coller sur le colis) et
+     * retourne une pièce jointe prête pour Mail::Send, ou null si indisponible.
+     */
+    protected function buildReturnSlipAttachment(RetractationRequest $request, Order $order, Customer $customer)
+    {
+        $products = RetractationRequest::decodeSnapshot($request->products_snapshot);
+        $returnAddress = trim((string) Configuration::get('RETRACTATION_RETURN_ADDRESS'));
+        $instructions = trim((string) Configuration::get('RETRACTATION_RETURN_INSTRUCTIONS'));
+
+        $this->context->smarty->assign([
+            'rc_shop_name' => Configuration::get('PS_SHOP_NAME'),
+            'rc_customer_name' => trim($customer->firstname . ' ' . $customer->lastname),
+            'rc_order_ref' => $order->reference,
+            'rc_request_ref' => $request->reference,
+            'rc_date' => Tools::displayDate(date('Y-m-d H:i:s'), true),
+            'rc_products' => is_array($products) ? $products : [],
+            'rc_return_address' => $returnAddress !== '' ? nl2br(htmlspecialchars($returnAddress, ENT_QUOTES, 'UTF-8')) : '',
+            'rc_instructions' => $instructions !== '' ? $instructions : '',
+        ]);
+
+        // display() (et non fetch('module:...')) pour une résolution fiable du
+        // template depuis le contexte back-office.
+        $html = $this->module->display(
+            _PS_MODULE_DIR_ . 'retractationcommande/retractationcommande.php',
+            'views/templates/front/pdf-bon-retour.tpl'
+        );
+        $filename = RetractationPdf::generate($html, (int) $request->id, null, 'bon_retour');
+        if (!$filename) {
+            return null;
+        }
+        $path = RetractationPdf::getPath($filename);
+        if (!$path) {
+            return null;
+        }
+
+        return [
+            'content' => file_get_contents($path),
+            'name' => 'bon-de-retour-' . $order->reference . '.pdf',
+            'mime' => 'application/pdf',
+        ];
     }
 }

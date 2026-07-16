@@ -26,14 +26,15 @@ class RetractationPdf
      *
      * @return string|null nom de fichier, null si TCPDF indisponible
      */
-    public static function generate($html, $idRequest, $appendHtml = null)
+    public static function generate($html, $idRequest, $appendHtml = null, $prefix = 'accuse_retractation')
     {
         if (!class_exists('TCPDF')) {
             return null;
         }
 
         $dir = self::getStorageDir();
-        $filename = sprintf('accuse_retractation_%d_%s.pdf', (int) $idRequest, Tools::passwdGen(12, 'ALPHANUMERIC'));
+        $prefix = preg_replace('/[^a-z0-9_]/i', '', (string) $prefix) ?: 'accuse_retractation';
+        $filename = sprintf('%s_%d_%s.pdf', $prefix, (int) $idRequest, Tools::passwdGen(12, 'ALPHANUMERIC'));
 
         $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8');
         $pdf->SetCreator(Configuration::get('PS_SHOP_NAME'));

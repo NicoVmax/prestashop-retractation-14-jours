@@ -10,7 +10,7 @@
 {/block}
 
 {block name='page_content'}
-  <div class="retractation-page">
+  <div class="container"><div class="retractation-page">
     <p>
       {l s='Conformément aux articles L221-18 et suivants du Code de la consommation, vous disposez d\'un délai de' mod='retractationcommande'}
       <strong>{$rc_delay_days} {l s='jours' mod='retractationcommande'}</strong>
@@ -41,7 +41,7 @@
                     <span class="retractation-status-badge">{$o.status_label}</span>
                   {/if}
                   {if $o.eligible}
-                    <a href="#" class="retractation-btn"
+                    <a href="#" class="retractation-btn cssTrans btn btn-secondary"
                        data-id-order="{$o.id_order|intval}"
                        data-rtoken="{$o.token}">
                       {l s='Se rétracter' mod='retractationcommande'}
@@ -106,7 +106,7 @@
             {if $rc_guest_order.deadline_text}
               <p class="retractation-deadline">{l s='Droit de rétractation exerçable' mod='retractationcommande'} {$rc_guest_order.deadline_text}.</p>
             {/if}
-            <a href="#" class="btn btn-primary retractation-btn"
+            <a href="#" class="retractation-btn cssTrans btn btn-secondary"
                data-id-order="{$rc_guest_order.id_order|intval}"
                data-rtoken="{$rc_guest_order.token}">
               {l s='Se rétracter' mod='retractationcommande'}
@@ -124,5 +124,5 @@
     <p class="retractation-legal">
       {l s='Le droit de rétractation ne s\'applique pas à certains contrats (art. L221-28 C. conso : biens sur mesure ou personnalisés, biens périssables, biens descellés pour raison d\'hygiène, etc.). Après dépôt, votre demande est vérifiée par notre service client qui vous transmet la procédure de retour. Le remboursement intervient au plus tard 14 jours après récupération du bien ou réception de la preuve d\'expédition, par le même moyen de paiement. Les frais de renvoi restent à votre charge.' mod='retractationcommande'}
     </p>
-  </div>
+  </div></div>
 {/block}

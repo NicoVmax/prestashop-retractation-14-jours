@@ -39,7 +39,7 @@ class RetractationCommande extends Module
     {
         $this->name = 'retractationcommande';
         $this->tab = 'administration';
-        $this->version = '1.4.5';
+        $this->version = '1.4.6';
         $this->author = 'Magic Garden';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = ['min' => '1.7.6.0', 'max' => '9.99.99'];
@@ -75,6 +75,7 @@ class RetractationCommande extends Module
             && Configuration::updateValue('RETRACTATION_CUSTOM_CSS', '', true)
             && Configuration::updateValue('RETRACTATION_ALLOW_PHOTOS', 1)
             && Configuration::updateValue('RETRACTATION_RETURN_ADDRESS', '', true)
+            && Configuration::updateValue('RETRACTATION_RETURN_INSTRUCTIONS', '', true)
             && $this->installDefaultStateMapping();
     }
 
@@ -101,6 +102,7 @@ class RetractationCommande extends Module
             'RETRACTATION_SHOW_FOOTER_LINK', 'RETRACTATION_DELIVERED_STATES', 'RETRACTATION_SHIPPED_STATES', 'RETRACTATION_BLOCKED_STATES',
             'RETRACTATION_EXCLUDED_CATS', 'RETRACTATION_EXCLUDED_PRODUCTS', 'RETRACTATION_PROCEDURE_TEXT',
             'RETRACTATION_CUSTOM_CSS', 'RETRACTATION_ALLOW_PHOTOS', 'RETRACTATION_RETURN_ADDRESS',
+            'RETRACTATION_RETURN_INSTRUCTIONS',
         ] as $key) {
             Configuration::deleteByName($key);
         }
@@ -385,6 +387,7 @@ class RetractationCommande extends Module
                 Configuration::updateValue('RETRACTATION_CUSTOM_CSS', Tools::getValue('RETRACTATION_CUSTOM_CSS'), true);
                 Configuration::updateValue('RETRACTATION_ALLOW_PHOTOS', (int) Tools::getValue('RETRACTATION_ALLOW_PHOTOS'));
                 Configuration::updateValue('RETRACTATION_RETURN_ADDRESS', Tools::getValue('RETRACTATION_RETURN_ADDRESS'), true);
+                Configuration::updateValue('RETRACTATION_RETURN_INSTRUCTIONS', Tools::getValue('RETRACTATION_RETURN_INSTRUCTIONS'), true);
                 $output .= $this->displayConfirmation($this->l('Configuration enregistrée.'));
             }
         }
@@ -808,6 +811,13 @@ HTML;
                     ],
                     [
                         'type' => 'textarea',
+                        'label' => $this->l('Instructions spécifiques (bon de retour + email)'),
+                        'name' => 'RETRACTATION_RETURN_INSTRUCTIONS',
+                        'autoload_rte' => true,
+                        'desc' => $this->l('Instructions affichées automatiquement dans l\'email d\'acceptation ET sur le bon de retour PDF joint (ex. : mode d\'emballage, numéro RMA à indiquer, transporteur imposé, point relais…). Laissez vide si inutile.'),
+                    ],
+                    [
+                        'type' => 'textarea',
                         'label' => $this->l('CSS personnalisé (front)'),
                         'name' => 'RETRACTATION_CUSTOM_CSS',
                         'rows' => 8,
@@ -837,6 +847,7 @@ HTML;
             'RETRACTATION_CUSTOM_CSS' => Tools::getValue('RETRACTATION_CUSTOM_CSS', Configuration::get('RETRACTATION_CUSTOM_CSS')),
             'RETRACTATION_ALLOW_PHOTOS' => Tools::getValue('RETRACTATION_ALLOW_PHOTOS', Configuration::get('RETRACTATION_ALLOW_PHOTOS')),
             'RETRACTATION_RETURN_ADDRESS' => Tools::getValue('RETRACTATION_RETURN_ADDRESS', Configuration::get('RETRACTATION_RETURN_ADDRESS')),
+            'RETRACTATION_RETURN_INSTRUCTIONS' => Tools::getValue('RETRACTATION_RETURN_INSTRUCTIONS', Configuration::get('RETRACTATION_RETURN_INSTRUCTIONS')),
         ];
 
         return $helper->generateForm([$form]) . $this->renderCatTreeTweaks();

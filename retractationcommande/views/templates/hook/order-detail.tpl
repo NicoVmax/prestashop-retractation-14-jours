@@ -23,7 +23,7 @@
         {l s='Vous disposez d\'un délai légal de 14 jours pour vous rétracter' mod='retractationcommande'}
         {if $retractation_deadline_text}({$retractation_deadline_text}){/if}.
       </p>
-      <a href="#" class="retractation-btn"
+      <a href="#" class="retractation-btn cssTrans btn btn-secondary"
          data-id-order="{$retractation_id_order|intval}"
          data-rtoken="{$retractation_token}">
         {l s='Se rétracter' mod='retractationcommande'}

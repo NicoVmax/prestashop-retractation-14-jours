@@ -89,7 +89,7 @@
             {else}
               <select name="returnQty[{$product.id_order_detail|intval}]" class="retractation-qty" aria-label="{l s='Quantité à rétracter' mod='retractationcommande'}">
                 {for $q=$product.max_qty to 0 step -1}
-                  <option value="{$q}">{$q}{if $q == 0} — {l s='conserver' mod='retractationcommande'}{/if}</option>
+                  <option value="{$q}"{if $q == 0} selected{/if}>{$q}{if $q == 0} — {l s='conserver' mod='retractationcommande'}{/if}</option>
                 {/for}
               </select>
               <span class="retractation-qty-max">/ {$product.max_qty}</span>
@@ -109,11 +109,24 @@
 
   {if $rc_allow_photos}
     <div class="form-group retractation-photos-field">
-      <label for="rc_photos">
+      <label>
         {l s='Photos (facultatif) — pour montrer l\'état du produit et de son emballage' mod='retractationcommande'}
       </label>
-      <input type="file" name="rc_photos[]" id="rc_photos" class="form-control-file"
-             accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+      <div class="retractation-photo-row">
+        <label for="rc_photo_1" class="retractation-photo-label">{l s='Photo 1' mod='retractationcommande'}</label>
+        <input type="file" name="rc_photos[]" id="rc_photo_1" class="form-control-file"
+               accept="image/jpeg,image/png,image/webp,image/gif">
+      </div>
+      <div class="retractation-photo-row">
+        <label for="rc_photo_2" class="retractation-photo-label">{l s='Photo 2' mod='retractationcommande'}</label>
+        <input type="file" name="rc_photos[]" id="rc_photo_2" class="form-control-file"
+               accept="image/jpeg,image/png,image/webp,image/gif">
+      </div>
+      <div class="retractation-photo-row">
+        <label for="rc_photo_3" class="retractation-photo-label">{l s='Photo 3' mod='retractationcommande'}</label>
+        <input type="file" name="rc_photos[]" id="rc_photo_3" class="form-control-file"
+               accept="image/jpeg,image/png,image/webp,image/gif">
+      </div>
       <small class="form-text text-muted">
         {l s='Jusqu\'à' mod='retractationcommande'} {$rc_photos_max} {l s='photos, 4 Mo maximum chacune (JPG, PNG, WebP, GIF). Ce n\'est pas obligatoire.' mod='retractationcommande'}
       </small>

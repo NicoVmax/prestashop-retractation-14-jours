@@ -80,7 +80,8 @@
 .retractation-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1050;
+  /* Élevé pour passer au-dessus des en-têtes/menus sticky des thèmes. */
+  z-index: 10001;
   background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: flex-start;
@@ -242,6 +243,13 @@ body.retractation-modal-open {
   font-size: 0.78rem;
   color: #777;
   margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Espacement du titre de section sous le paragraphe d'intro (trop collé sur
+   certains thèmes). */
+.retractation-page h2 {
+  margin-top: 1.75rem;
 }
 
 .retractation-actions {
@@ -249,6 +257,11 @@ body.retractation-modal-open {
   gap: 0.75rem;
   justify-content: flex-end;
   margin-top: 1rem;
+}
+
+.retractation-actions .btn,
+.retractation-actions .btn-primary:disabled {
+  border-color: transparent;
 }
 
 .retractation-loading {
@@ -291,8 +304,31 @@ body.retractation-modal-open {
 }
 
 /* ---------- Page formulaire ---------- */
-.retractation-page .retractation-orders-table td {
+/* Style autonome du tableau (certains thèmes ne stylent pas .table → colonnes collées). */
+.retractation-orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0 1.5rem;
+  font-size: 0.95rem;
+}
+.retractation-orders-table th,
+.retractation-orders-table td {
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid #e4e8e4;
+  text-align: left;
   vertical-align: middle;
+}
+.retractation-orders-table thead th {
+  border-bottom: 2px solid #2e7d32;
+  font-weight: 600;
+  color: #2e5a31;
+  white-space: nowrap;
+}
+.retractation-orders-table tbody tr:hover {
+  background: #f7faf7;
+}
+.retractation-orders-table td:first-child {
+  font-weight: 600;
 }
 
 .retractation-guest-result {
