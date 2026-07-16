@@ -7,6 +7,23 @@ gratuite, visible et facilement accessible), applicables au **19 juin 2026**.
 
 **Compatibilité :** PrestaShop **1.7.6 → 9.x** · PHP 7.2 → 8.3.
 
+## Nouveautés v1.4.6 — Bon de retour PDF, photos multi-champs & robustesse thèmes
+
+### Ajouté
+- **Bon de retour PDF joint à l'e-mail d'acceptation** : à la validation d'une demande (produit livré ou en cours d'acheminement), un bon de retour au format PDF est généré et joint à l'e-mail. Le message invite explicitement le client à l'imprimer et à le coller sur l'extérieur du colis, condition d'acceptation par le service logistique.
+- **Champ « Instructions spécifiques »** en configuration : texte affiché automatiquement dans l'e-mail d'acceptation ET sur le bon de retour PDF (mode d'emballage, numéro RMA à indiquer, transporteur ou point relais imposé…).
+- **Photos client : 3 champs séparés** (« Photo 1 », « Photo 2 », « Photo 3 ») dans le formulaire, au lieu d'une sélection multiple obligatoire en une seule fois.
+
+### Modifié
+- **Visualisation des photos en back-office** : ouverture dans une fenêtre (lightbox) avec navigation précédente/suivante (souris et clavier) et compteur, au lieu d'un nouvel onglet par photo.
+- **Quantité à retourner par défaut à 0** dans le formulaire : le client choisit explicitement les quantités à retourner, ce qui évite de sélectionner par erreur la totalité de la commande.
+- **Bouton « Se rétracter »** : reprend désormais les classes de bouton du thème (`btn btn-secondary`) pour un rendu natif sur les thèmes personnalisés, tout en conservant le style par défaut du module.
+
+### Corrigé
+- **Rendu sur les thèmes sans conteneur** : conteneur (`.container`) autour du contenu, alignement du fil d'ariane (breadcrumb) sur le conteneur du thème, style autonome du tableau des commandes éligibles (espacement des colonnes, en-tête, bordures) et espacement du titre de section — pour les thèmes qui ne stylent pas ces éléments.
+- **z-index du modal** à `10001` pour passer au-dessus des menus sticky des thèmes.
+- Bordures des boutons d'action harmonisées.
+
 ## Nouveautés v1.4.5 — Correctifs post-1.4.4 (upgrade SQL, délai, XSS BO)
 
 - **Erreur 500 au dépôt d'une demande après mise à jour** : la colonne `photos` (introduite en 1.4.4) n'était créée qu'à l'installation, jamais lors d'une montée de version PrestaShop — d'où une erreur SQL « Unknown column 'photos' » sur les boutiques ayant migré. Ajout d'un script d'upgrade PrestaShop natif (`upgrade/upgrade-1.4.5.php`) qui crée la colonne pour toutes les mises à jour (idempotent).
