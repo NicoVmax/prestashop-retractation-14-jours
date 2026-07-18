@@ -1251,9 +1251,18 @@ HTML;
      */
     public function hookDisplayCustomerAccount($params)
     {
+        // Le thème Hummingbird (PS 8.1+/9) utilise une structure de menu compte
+        // différente (.account-menu__link) du thème classic (.col-* / .link-item).
+        $themeName = '';
+        if (isset($this->context->shop->theme) && is_object($this->context->shop->theme)
+            && method_exists($this->context->shop->theme, 'getName')) {
+            $themeName = (string) $this->context->shop->theme->getName();
+        }
+
         $this->context->smarty->assign([
             'retractation_link_label' => Configuration::get('RETRACTATION_LINK_LABEL'),
             'retractation_link_url' => $this->context->link->getModuleLink($this->name, 'formulaire', []),
+            'retractation_account_menu_style' => (Tools::strtolower($themeName) === 'hummingbird'),
         ]);
 
         return $this->display(__FILE__, 'views/templates/hook/customer-account.tpl');

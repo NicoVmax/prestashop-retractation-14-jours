@@ -15,6 +15,7 @@ Toutes les évolutions notables du module. Format inspiré de [Keep a Changelog]
 - **Bouton « Se rétracter »** : reprend désormais les classes de bouton du thème (`btn btn-secondary`) pour un rendu natif sur les thèmes personnalisés, tout en conservant le style par défaut du module.
 
 ### Corrigé
+- **Compatibilité thème Hummingbird (PS 8.1+/9)** : le lien « Exercer mon droit de rétractation » dans l'espace client utilise désormais le markup du menu compte de Hummingbird (`.account-menu__link`) au lieu de la grille du thème classic, pour un affichage aligné sur les autres liens du menu.
 - **Rendu sur les thèmes sans conteneur** : conteneur (`.container`) autour du contenu, alignement du fil d'ariane (breadcrumb) sur le conteneur du thème, style autonome du tableau des commandes éligibles (espacement des colonnes, en-tête, bordures) et espacement du titre de section — pour les thèmes qui ne stylent pas ces éléments.
 
 ## [1.4.5] — 2026-07-12
