@@ -2,6 +2,8 @@
 
 [![Téléchargements](https://img.shields.io/github/downloads/zenmod40/prestashop-retractation-14-jours/total.svg)](https://github.com/zenmod40/prestashop-retractation-14-jours/releases) [![Version](https://img.shields.io/github/v/release/zenmod40/prestashop-retractation-14-jours)](https://github.com/zenmod40/prestashop-retractation-14-jours/releases/latest)
 
+> 📦 **[Page du module sur zm40.com](https://zm40.com/retractation)** · [Documentation](https://zm40.com/retractation/documentation) · [Changelog](https://zm40.com/retractation/changelog)
+
 Module de mise en conformité avec le droit de rétractation (art. L221-18 et suivants du
 Code de la consommation — réf. [service-public.gouv.fr F10485](https://www.service-public.gouv.fr/particuliers/vosdroits/F10485))
 et avec l'**ordonnance n°2026-2 / décret n°2026-3** (fonctionnalité de rétractation en ligne
