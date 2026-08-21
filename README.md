@@ -2,7 +2,7 @@
 
 [![Téléchargements](https://img.shields.io/github/downloads/zenmod40/prestashop-retractation-14-jours/total.svg)](https://github.com/zenmod40/prestashop-retractation-14-jours/releases) [![Version](https://img.shields.io/github/v/release/zenmod40/prestashop-retractation-14-jours)](https://github.com/zenmod40/prestashop-retractation-14-jours/releases/latest)
 
-> 📦 **[Page du module sur zm40.com](https://zm40.com/retractation)** · [Documentation](https://zm40.com/retractation/documentation) · [Changelog](https://zm40.com/retractation/changelog)
+> **[Page du module sur zm40.com](https://zm40.com/retractation)** · [Documentation](https://zm40.com/retractation/documentation) · [Changelog](https://zm40.com/retractation/changelog)
 
 Module de mise en conformité avec le droit de rétractation (art. L221-18 et suivants du
 Code de la consommation — réf. [service-public.gouv.fr F10485](https://www.service-public.gouv.fr/particuliers/vosdroits/F10485))
@@ -10,6 +10,14 @@ et avec l'**ordonnance n°2026-2 / décret n°2026-3** (fonctionnalité de rétr
 gratuite, visible et facilement accessible), applicables au **19 juin 2026**.
 
 **Compatibilité :** PrestaShop **1.7.6 → 9.x** · PHP 7.2 → 8.3.
+
+## Nouveautés v1.4.7 — Correctif filtres back-office & libellé du mapping
+
+### Corrigé
+- **Erreur 500 sur les filtres de la liste des demandes** : la liste joint les tables `orders` et `customer`, ce qui rendait ambigus les noms de colonnes partagés. Filtrer sur « Référence » ou sur « Demandée le » provoquait une erreur SQL (`Column 'reference'/'date_add' in WHERE is ambiguous`), et la liste restait inaccessible tant que le filtre était mémorisé — les filtres de liste étant stockés dans le cookie employé et non dans le cache PrestaShop, une déconnexion / reconnexion suffit à le purger. Toutes les colonnes issues de la table du module sont désormais explicitement préfixées. Signalé par [@PhenixInfo](https://github.com/PhenixInfo) ([#9](https://github.com/zenmod40/prestashop-retractation-14-jours/issues/9), [#10](https://github.com/zenmod40/prestashop-retractation-14-jours/issues/10)).
+
+### Modifié
+- **Libellé du rôle « Expédié » dans le mapping des statuts** : précisé en « Expédié (colis parti, non encore livré) », et texte d'aide complété pour indiquer que les statuts antérieurs à l'expédition (paiement accepté, en cours de préparation) ne doivent être cochés dans aucune colonne — la rétractation est alors une simple annulation, sans retour de marchandise. Signalé par [@alexandrebru83](https://github.com/alexandrebru83) ([#11](https://github.com/zenmod40/prestashop-retractation-14-jours/issues/11)).
 
 ## Nouveautés v1.4.6 — Bon de retour PDF, photos multi-champs & robustesse thèmes
 
