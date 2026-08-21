@@ -12,7 +12,7 @@
  *
  * @author    ZM40 — Nicolas Michaud (Magic Garden)
  * @copyright 2026 Nicolas Michaud — ZM40 / Magic Garden
- * @license   GPL-3.0-or-later — https://www.gnu.org/licenses/gpl-3.0.html
+ * @license   https://opensource.org/licenses/OSL-3.0 Open Software License version 3.0
  * @link      https://zm40.com/retractation
  *
  * Aide à la mise en conformité : ne constitue pas un conseil juridique.
@@ -39,7 +39,7 @@ class RetractationCommande extends Module
     {
         $this->name = 'retractationcommande';
         $this->tab = 'administration';
-        $this->version = '1.4.7';
+        $this->version = '1.4.8';
         $this->author = 'ZM40';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = ['min' => '1.7.6.0', 'max' => '9.99.99'];
@@ -691,7 +691,7 @@ HTML;
                 <div class="col-lg-8">
                     <p>' . $this->l('Module gratuit édité par') . ' <strong>ZM40</strong> — '
                         . '<a href="https://zm40.com/retractation/" target="_blank" rel="noopener">zm40.com</a>. '
-                        . $this->l('Distribué sous licence GPL v3 (libre d\'utilisation, de modification et de redistribution).') . '</p>
+                        . $this->l('Distribué sous licence OSL 3.0 (libre d\'utilisation, de modification et de redistribution).') . '</p>
                     <p class="text-muted"><small>' . $this->l('Ce module est une aide à la mise en conformité (droit de rétractation, art. L221-18 s. du Code de la consommation) et ne constitue pas un conseil juridique. Le marchand reste seul responsable de la conformité de sa boutique.') . '</small></p>
                     <p>' . $this->l('Besoin d\'aide à l\'installation, d\'une personnalisation ou d\'une garantie de conformité ?') . ' '
                         . '<a href="https://zm40.com/contact" target="_blank" rel="noopener">' . $this->l('Contactez-nous') . '</a>.</p>

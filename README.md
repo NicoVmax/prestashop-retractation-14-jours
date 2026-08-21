@@ -223,7 +223,7 @@ retractationcommande/
 
 ## Licence
 
-Distribué sous **[GNU GPL v3](LICENSE)** : libre d'utilisation, de modification et de redistribution, **à condition de conserver la mention d'auteur, le fichier LICENSE et d'indiquer les modifications éventuelles**. Les forks et adaptations sont les bienvenus.
+Distribué sous **[Open Software License 3.0](LICENSE)** : libre d'utilisation, de modification et de redistribution, **à condition de conserver la mention d'auteur, le fichier LICENSE et d'indiquer les modifications éventuelles**. Les forks et adaptations sont les bienvenus.
 
 © 2026 Nicolas Michaud — ZM40 / Magic Garden
 
