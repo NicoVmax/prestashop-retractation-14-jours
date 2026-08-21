@@ -52,17 +52,25 @@ class AdminRetractationController extends ModuleAdminController
 
         $this->fields_list = [
             'id_retractation_request' => ['title' => 'ID', 'align' => 'center', 'class' => 'fixed-width-xs'],
-            'reference' => ['title' => $this->l('Référence'), 'class' => 'fixed-width-sm'],
+            // La liste joint `orders` et `customer` : toute colonne de la table du module
+            // doit être préfixée via filter_key, sinon le filtre produit un WHERE ambigu
+            // (erreur SQL 1052) sur les noms partagés (reference, date_add).
+            'reference' => [
+                'title' => $this->l('Référence'),
+                'class' => 'fixed-width-sm',
+                'filter_key' => 'a!reference',
+            ],
             'order_reference' => ['title' => $this->l('Commande'), 'havingFilter' => true],
             'customer_name' => ['title' => $this->l('Client'), 'havingFilter' => true],
             'customer_email' => ['title' => $this->l('Email'), 'havingFilter' => true],
-            'date_add' => ['title' => $this->l('Demandée le'), 'type' => 'datetime'],
-            'legal_deadline' => ['title' => $this->l('Date limite légale'), 'type' => 'datetime'],
+            'date_add' => ['title' => $this->l('Demandée le'), 'type' => 'datetime', 'filter_key' => 'a!date_add'],
+            'legal_deadline' => ['title' => $this->l('Date limite légale'), 'type' => 'datetime', 'filter_key' => 'a!legal_deadline'],
             'within_deadline' => [
                 'title' => $this->l('Dans les délais'),
                 'align' => 'center',
                 'type' => 'bool',
                 'callback' => 'displayWithinDeadline',
+                'filter_key' => 'a!within_deadline',
             ],
             'status' => [
                 'title' => $this->l('Statut'),

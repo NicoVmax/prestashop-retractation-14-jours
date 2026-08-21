@@ -39,7 +39,7 @@ class RetractationCommande extends Module
     {
         $this->name = 'retractationcommande';
         $this->tab = 'administration';
-        $this->version = '1.4.6';
+        $this->version = '1.4.7';
         $this->author = 'Magic Garden';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = ['min' => '1.7.6.0', 'max' => '9.99.99'];
@@ -503,7 +503,7 @@ HTML;
 
         $roles = [
             'DELIVERED' => ['label' => $this->l('Livré (démarre le délai 14 j)'), 'sel' => $deliveredSel],
-            'SHIPPED' => ['label' => $this->l('Expédié (en cours d\'acheminement)'), 'sel' => $shippedSel],
+            'SHIPPED' => ['label' => $this->l('Expédié (colis parti, non encore livré)'), 'sel' => $shippedSel],
             'BLOCKED' => ['label' => $this->l('Bloquant (aucune rétractation)'), 'sel' => $blockedSel],
         ];
 
@@ -511,7 +511,7 @@ HTML;
 
         $html = '<form method="post" action="' . $action . '" id="rc-mapping-form">';
         $html .= '<div class="alert alert-info">'
-            . $this->l('Associez chaque statut de commande à un rôle. « Livré » fait démarrer le délai légal de 14 jours (en complément du drapeau natif de PrestaShop) ; « Bloquant » masque le bouton de rétractation (en plus des états annulé / remboursé / erreur, toujours bloquants). Le remplissage automatique analyse les drapeaux et le nom de chaque statut.')
+            . $this->l('Associez chaque statut de commande à un rôle. « Livré » fait démarrer le délai légal de 14 jours (en complément du drapeau natif de PrestaShop) ; « Expédié » ne concerne que les statuts où le colis a réellement quitté l\'entrepôt sans être encore livré : le client est alors invité à refuser le colis ou à le renvoyer. Les statuts antérieurs à l\'expédition (paiement accepté, en cours de préparation…) ne doivent être cochés dans aucune colonne : la commande n\'étant pas partie, la rétractation est une simple annulation, sans retour de marchandise ;« Bloquant » masque le bouton de rétractation (en plus des états annulé / remboursé / erreur, toujours bloquants). Le remplissage automatique analyse les drapeaux et le nom de chaque statut.')
             . '</div>';
 
         $html .= '<div class="rc-map-toolbar">'
