@@ -10,10 +10,10 @@
  * (annexe art. R221-1), accusé de réception PDF + email (art. L221-21 al.3),
  * lien visible sur tout le site (footer), parcours invité, liste de vérification SAV.
  *
- * @author    Magic Garden <https://magicgarden.fr>
- * @copyright 2026 Magic Garden
+ * @author    ZM40 — Nicolas Michaud (Magic Garden)
+ * @copyright 2026 Nicolas Michaud — ZM40 / Magic Garden
  * @license   GPL-3.0-or-later — https://www.gnu.org/licenses/gpl-3.0.html
- * @link      https://magicgarden.fr
+ * @link      https://zm40.com/retractation
  *
  * Aide à la mise en conformité : ne constitue pas un conseil juridique.
  * Le marchand reste seul responsable de la conformité de sa boutique.
@@ -40,7 +40,7 @@ class RetractationCommande extends Module
         $this->name = 'retractationcommande';
         $this->tab = 'administration';
         $this->version = '1.4.7';
-        $this->author = 'Magic Garden';
+        $this->author = 'ZM40';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = ['min' => '1.7.6.0', 'max' => '9.99.99'];
         $this->bootstrap = true;
@@ -686,15 +686,15 @@ HTML;
     {
         return '
         <div class="panel">
-            <div class="panel-heading"><i class="icon-leaf"></i> Magic Garden</div>
+            <div class="panel-heading"><i class="icon-leaf"></i> ZM40</div>
             <div class="row">
                 <div class="col-lg-8">
-                    <p>' . $this->l('Module gratuit développé par') . ' <strong>ZM40</strong> / Magic Garden — '
+                    <p>' . $this->l('Module gratuit édité par') . ' <strong>ZM40</strong> — '
                         . '<a href="https://zm40.com/retractation/" target="_blank" rel="noopener">zm40.com</a>. '
                         . $this->l('Distribué sous licence GPL v3 (libre d\'utilisation, de modification et de redistribution).') . '</p>
                     <p class="text-muted"><small>' . $this->l('Ce module est une aide à la mise en conformité (droit de rétractation, art. L221-18 s. du Code de la consommation) et ne constitue pas un conseil juridique. Le marchand reste seul responsable de la conformité de sa boutique.') . '</small></p>
                     <p>' . $this->l('Besoin d\'aide à l\'installation, d\'une personnalisation ou d\'une garantie de conformité ?') . ' '
-                        . '<a href="https://magicgarden.fr" target="_blank" rel="noopener">' . $this->l('Contactez-nous') . '</a>.</p>
+                        . '<a href="https://zm40.com/contact" target="_blank" rel="noopener">' . $this->l('Contactez-nous') . '</a>.</p>
                 </div>
             </div>
         </div>';

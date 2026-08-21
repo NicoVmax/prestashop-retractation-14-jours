@@ -241,10 +241,9 @@
     fonctionnalité de rétractation en ligne obligatoire au 19 juin 2026)
   </p>
   <div class="meta">
-    <span>Version 1.1.0</span>
-    <span>PrestaShop 1.7.6 → 8.x</span>
+    <span>PrestaShop 1.7.6 → 9.x</span>
     <span>Conformité requise au 19 juin 2026</span>
-    <span>Magic Garden</span>
+    <span>ZM40</span>
   </div>
 </header>
 
@@ -719,6 +718,14 @@
         <td>Masque le bouton de rétractation, <strong>en plus</strong> des états annulé / remboursé /
           erreur (toujours bloquants par défaut).</td>
       </tr>
+      <tr>
+        <td><em>Aucune colonne cochée</em></td>
+        <td>C'est le cas des statuts <strong>antérieurs à l'expédition</strong> (paiement accepté, en cours
+          de préparation…). La rétractation y <strong>reste possible</strong> — option « Autoriser avant
+          livraison », active par défaut, conformément à l'art. L221-18 dernier alinéa — et le module la
+          traite comme une <strong>annulation</strong> : aucun retour de marchandise, le client est informé
+          que l'expédition sera annulée puis intégralement remboursée.</td>
+      </tr>
     </table>
     <p>
       Le module distingue ainsi <strong>trois situations</strong> et adapte tout le parcours : commande
@@ -904,7 +911,7 @@
 </main>
 
 <footer>
-  Rétractation Commande v1.0.0 — Magic Garden · Documentation générée pour PrestaShop 8 ·
+  Rétractation Commande — ZM40 · Documentation pour PrestaShop 1.7.6 → 9.x ·
   Référence légale : <a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F10485" target="_blank" rel="noopener">service-public.gouv.fr — F10485</a>
 </footer>
 

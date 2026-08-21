@@ -19,6 +19,8 @@ gratuite, visible et facilement accessible), applicables au **19 juin 2026**.
 ### Modifié
 - **Libellé du rôle « Expédié » dans le mapping des statuts** : précisé en « Expédié (colis parti, non encore livré) ». Signalé par [@alexandrebru83](https://github.com/alexandrebru83) ([#11](https://github.com/zenmod40/prestashop-retractation-14-jours/issues/11)).
 - **Aide de la matrice de mapping** réécrite en liste, et complétée sur le point qui prêtait à confusion : les statuts antérieurs à l'expédition ne se cochent dans aucune colonne, mais **la rétractation y reste possible** (option « Autoriser avant livraison », active par défaut, art. L221-18 dernier alinéa). Le module la traite alors comme une annulation, sans retour de marchandise et avec remboursement intégral.
+- **Cohérence d'édition** : le module est désormais publié sous le seul nom d'éditeur **ZM40** (champ auteur PrestaShop, en-tête du fichier principal, panneau de configuration), l'atelier Magic Garden restant mentionné au titre de l'attribution et du copyright.
+- **Documentation embarquée** : compatibilité corrigée en PrestaShop 1.7.6 → 9.x, et ajout d'une ligne décrivant le cas des statuts laissés non cochés.
 
 ## Nouveautés v1.4.6 — Bon de retour PDF, photos multi-champs & robustesse thèmes
 
@@ -177,8 +179,8 @@ outils habituels et le client suit son retour dans son espace client comme d'hab
 
 Récupérez le **ZIP prêt à installer**, au choix :
 
-- **Tout public** → [magicgarden.fr/retractation.php](https://magicgarden.fr/retractation.php) (version testée et tenue à jour).
-- **Développeurs** → la dernière [**Release GitHub**](https://github.com/zenmod40/prestashop-retractation-14-jours/releases) (ZIP attaché à chaque version).
+- [**Page du module sur zm40.com**](https://zm40.com/retractation) — présentation, documentation et téléchargement.
+- La dernière [**Release GitHub**](https://github.com/zenmod40/prestashop-retractation-14-jours/releases/latest) — le ZIP est attaché à chaque version, c'est la source de référence.
 
 Puis :
 

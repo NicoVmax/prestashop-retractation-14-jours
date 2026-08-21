@@ -10,6 +10,8 @@ Toutes les évolutions notables du module. Format inspiré de [Keep a Changelog]
 ### Modifié
 - **Libellé du rôle « Expédié » dans le mapping des statuts** : précisé en « Expédié (colis parti, non encore livré) ». Signalé par @alexandrebru83 (#11).
 - **Aide de la matrice de mapping** réécrite en liste, et complétée sur le point qui prêtait à confusion : les statuts antérieurs à l'expédition ne se cochent dans aucune colonne, mais **la rétractation y reste possible** (option « Autoriser avant livraison », active par défaut, conformément à l'art. L221-18 dernier alinéa). Le module la traite alors comme une annulation, sans retour de marchandise et avec remboursement intégral.
+- **Cohérence d'édition** : le module est désormais publié sous le seul nom d'éditeur **ZM40** (champ auteur PrestaShop, en-tête du fichier principal, panneau de configuration), l'atelier Magic Garden restant mentionné au titre de l'attribution et du copyright.
+- **Documentation embarquée** (`docs/documentation.html`) : compatibilité corrigée en PrestaShop 1.7.6 → 9.x (elle annonçait encore 8.x et une version 1.0.0 périmée), et ajout d'une ligne décrivant le cas des statuts laissés non cochés.
 
 ## [1.4.6] — 2026-07-16
 
