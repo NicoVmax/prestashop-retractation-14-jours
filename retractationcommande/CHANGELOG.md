@@ -8,7 +8,8 @@ Toutes les évolutions notables du module. Format inspiré de [Keep a Changelog]
 - **Erreur 500 sur les filtres de la liste des demandes** : la liste joint les tables `orders` et `customer`, ce qui rendait ambigus les noms de colonnes partagés. Filtrer sur « Référence » ou sur « Demandée le » provoquait une erreur SQL (`Column 'reference'/'date_add' in WHERE is ambiguous`), et la liste restait inaccessible tant que le filtre était mémorisé. Toutes les colonnes issues de la table du module sont désormais explicitement préfixées. Signalé par @PhenixInfo (#9, #10).
 
 ### Modifié
-- **Libellé du rôle « Expédié » dans le mapping des statuts** : précisé en « Expédié (colis parti, non encore livré) », et texte d'aide complété pour indiquer que les statuts antérieurs à l'expédition (paiement accepté, en cours de préparation) ne doivent être cochés dans aucune colonne — la rétractation est alors une simple annulation, sans retour de marchandise. Signalé par @alexandrebru83 (#11).
+- **Libellé du rôle « Expédié » dans le mapping des statuts** : précisé en « Expédié (colis parti, non encore livré) ». Signalé par @alexandrebru83 (#11).
+- **Aide de la matrice de mapping** réécrite en liste, et complétée sur le point qui prêtait à confusion : les statuts antérieurs à l'expédition ne se cochent dans aucune colonne, mais **la rétractation y reste possible** (option « Autoriser avant livraison », active par défaut, conformément à l'art. L221-18 dernier alinéa). Le module la traite alors comme une annulation, sans retour de marchandise et avec remboursement intégral.
 
 ## [1.4.6] — 2026-07-16
 

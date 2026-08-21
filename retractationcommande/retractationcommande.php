@@ -511,7 +511,13 @@ HTML;
 
         $html = '<form method="post" action="' . $action . '" id="rc-mapping-form">';
         $html .= '<div class="alert alert-info">'
-            . $this->l('Associez chaque statut de commande à un rôle. « Livré » fait démarrer le délai légal de 14 jours (en complément du drapeau natif de PrestaShop) ; « Expédié » ne concerne que les statuts où le colis a réellement quitté l\'entrepôt sans être encore livré : le client est alors invité à refuser le colis ou à le renvoyer. Les statuts antérieurs à l\'expédition (paiement accepté, en cours de préparation…) ne doivent être cochés dans aucune colonne : la commande n\'étant pas partie, la rétractation est une simple annulation, sans retour de marchandise ;« Bloquant » masque le bouton de rétractation (en plus des états annulé / remboursé / erreur, toujours bloquants). Le remplissage automatique analyse les drapeaux et le nom de chaque statut.')
+            . '<p>' . $this->l('Associez chaque statut de commande à un rôle, pour coller au workflow de votre boutique. Le remplissage automatique analyse les drapeaux natifs et le nom de chaque statut.') . '</p>'
+            . '<ul class="rc-map-help">'
+            . '<li>' . $this->l('« Livré » fait démarrer le délai légal de 14 jours, en complément du drapeau natif de PrestaShop.') . '</li>'
+            . '<li>' . $this->l('« Expédié » ne vise que les statuts où le colis a réellement quitté l\'entrepôt sans être encore livré : le client est alors invité à refuser le colis à sa présentation, ou à le renvoyer sans l\'ouvrir.') . '</li>'
+            . '<li>' . $this->l('« Bloquant » masque le bouton de rétractation, en plus des états annulé / remboursé / erreur, toujours bloquants.') . '</li>'
+            . '<li>' . $this->l('Les statuts antérieurs à l\'expédition (paiement accepté, en cours de préparation…) ne se cochent dans aucune colonne. La rétractation y reste possible — c\'est l\'option « Autoriser avant livraison », active par défaut — et le module la traite comme une annulation : aucun retour de marchandise, et le client est informé que l\'expédition sera annulée puis intégralement remboursée.') . '</li>'
+            . '</ul>'
             . '</div>';
 
         $html .= '<div class="rc-map-toolbar">'
@@ -576,6 +582,8 @@ HTML;
         return '
 <style>
 .rc-map-toolbar{margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rc-map-help{margin:8px 0 0;padding-left:18px}
+.rc-map-help li{margin-bottom:4px}
 .rc-map-search{height:32px;border:1px solid #ccc;border-radius:4px;padding:0 10px;min-width:220px}
 .rc-map-summary{color:#555;font-size:13px;margin-left:auto}
 .rc-map-summary .rc-map-conflict{color:#c0392b;font-weight:bold}
