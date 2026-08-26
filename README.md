@@ -11,6 +11,11 @@ gratuite, visible et facilement accessible), applicables au **19 juin 2026**.
 
 **Compatibilité :** PrestaShop **1.7.6 → 9.x** · PHP 7.2 → 8.3.
 
+## Nouveautés v1.4.9 — Lien footer visible pour les visiteurs non connectés
+
+### Corrigé
+- **Lien de rétractation en pied de page invisible pour les visiteurs non connectés** : le lien n'était rendu qu'aux clients connectés, en contradiction avec sa description en configuration (« visible en pied de page de toutes les pages du site ») et avec l'exigence de visibilité de l'ordonnance n°2026-2. Un client passé par la commande invité ne le voyait donc jamais, alors que la page de rétractation gère ce parcours depuis l'origine (recherche de la commande par e-mail + référence). Le lien s'affiche désormais pour tous les visiteurs, connectés ou non, dès que l'option « Afficher le lien en pied de page » est activée. Aucun changement de configuration n'est nécessaire à la mise à jour.
+
 ## Nouveautés v1.4.7 — Correctif filtres back-office & libellé du mapping
 
 ### Corrigé
