@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables du module. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/).
 
+## [1.4.9] — 2026-08-26
+
+### Corrigé
+- **Lien de rétractation en pied de page invisible pour les visiteurs non connectés** : le lien n'était rendu qu'aux clients connectés, en contradiction avec sa description en configuration (« visible en pied de page de toutes les pages du site ») et avec l'exigence de visibilité de l'ordonnance n°2026-2. Un client passé par la commande invité ne le voyait donc jamais, alors que la page de rétractation gère ce parcours depuis l'origine (recherche de la commande par e-mail + référence). Le lien s'affiche désormais pour tous les visiteurs, connectés ou non, dès que l'option « Afficher le lien en pied de page » est activée. Aucun changement de configuration n'est nécessaire à la mise à jour.
+
 ## [1.4.8] — 2026-08-21
 
 ### Modifié

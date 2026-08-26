@@ -39,7 +39,7 @@ class RetractationCommande extends Module
     {
         $this->name = 'retractationcommande';
         $this->tab = 'administration';
-        $this->version = '1.4.8';
+        $this->version = '1.4.9';
         $this->author = 'ZM40';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = ['min' => '1.7.6.0', 'max' => '9.99.99'];
@@ -1225,8 +1225,10 @@ HTML;
         // footer est rendu partout) pour s'appliquer où que le module s'affiche.
         $out = $this->getCustomCssTag();
 
-        // Lien réservé aux clients connectés, si activé.
-        if (Configuration::get('RETRACTATION_SHOW_FOOTER_LINK') && $this->context->customer->isLogged()) {
+        // Lien visible pour tous les visiteurs, connectés ou non : le
+        // formulaire gère le parcours invité et l'ordonnance n°2026-2 exige
+        // une fonctionnalité visible sur tout le site.
+        if (Configuration::get('RETRACTATION_SHOW_FOOTER_LINK')) {
             $this->context->smarty->assign([
                 'retractation_link_label' => Configuration::get('RETRACTATION_LINK_LABEL'),
                 'retractation_link_url' => $this->context->link->getModuleLink($this->name, 'formulaire', []),
