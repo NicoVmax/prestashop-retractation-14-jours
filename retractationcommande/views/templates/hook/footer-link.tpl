@@ -2,7 +2,7 @@
  * Lien "Exercer mon droit de rétractation" — pied de page de toutes les pages
  * (fonctionnalité visible et facilement accessible, ordonnance n°2026-2).
  *
- * Le lien est inséré à la fin de la/des liste(s) de liens CMS du footer
+ * Le lien est inséré à la fin d'UNE seule liste de liens CMS du footer
  * (ps_linklist : Livraison, Mentions légales, …) pour s'intégrer au thème.
  * Si aucune liste CMS n'est trouvée, le bloc autonome ci-dessous sert de
  * solution de repli.
@@ -35,19 +35,21 @@
       return;
     }
 
-    lists.forEach(function (ul) {
-      if (ul.querySelector('.retractation-cms-link')) {
-        return;
-      }
-      var li = document.createElement('li');
-      var a = document.createElement('a');
-      a.className = 'cms-page-link retractation-cms-link';
-      a.href = url;
-      a.title = label;
-      a.textContent = label;
-      li.appendChild(a);
-      ul.appendChild(li);
-    });
+    if (document.querySelector('.retractation-cms-link')) {
+      return;
+    }
+
+    // Une seule insertion, dans la dernière liste : par convention le bloc
+    // légal (Livraison, Mentions légales, CGV) suit le bloc produits.
+    var ul = lists[lists.length - 1];
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.className = 'cms-page-link retractation-cms-link';
+    a.href = url;
+    a.title = label;
+    a.textContent = label;
+    li.appendChild(a);
+    ul.appendChild(li);
   }
 
   if (document.readyState === 'loading') {
