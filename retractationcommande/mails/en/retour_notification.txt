@@ -1,0 +1,10 @@
+{title}
+
+Hello {firstname} {lastname},
+
+{intro}
+
+{body}
+
+Best regards,
+{shop_name}

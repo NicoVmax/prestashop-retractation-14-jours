@@ -1,0 +1,10 @@
+{title}
+
+Bonjour {firstname} {lastname},
+
+{intro}
+
+{body}
+
+Cordialement,
+{shop_name}

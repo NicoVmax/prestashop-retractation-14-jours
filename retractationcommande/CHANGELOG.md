@@ -2,6 +2,19 @@
 
 Toutes les évolutions notables du module. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/).
 
+## [1.5.0] — 2026-09-03
+
+### Ajouté
+- **Règles de retour par groupe de clients.** Le droit de rétractation de quatorze jours est un droit du consommateur ; un professionnel n'en a pas, et ce qui s'applique à lui est la politique commerciale du marchand. Nouvel onglet « Règles par groupe » : chaque groupe suit le jeu par défaut (la configuration actuelle, inchangée) ou reçoit un jeu propre — délai en jours sans plancher légal, libellé du lien, titre et intitulé du formulaire, conditions affichées avant l'envoi, procédure envoyée après validation, catégories et produits exclus. Le jeu d'un client est choisi sur son groupe par défaut (`id_default_group`), le critère que PrestaShop utilise pour les prix. Un libellé de lien vide masque le lien à ce groupe (retours traités par contact).
+- **Vocabulaire commercial pour un jeu par groupe** : page de demande, fenêtre de confirmation, détail de commande, badges de statut, messages de succès et e-mails ne parlent plus de rétractation ni du Code de la consommation. Les e-mails passent par un template neutre (`retour_notification`, FR et EN), sans accusé de réception PDF légal.
+
+- **Choix du bloc de pied de page où insérer le lien.** Nouveau champ en configuration : le sélecteur CSS de la liste visée, par exemple `#footer_linklist_2 ul` ou `.ps-customeraccountlinks ul` pour le bloc « Votre compte ». Laissé vide (valeur par défaut), le comportement ne change pas : le lien est ajouté à la dernière liste de liens CMS du pied de page. Un sélecteur qui ne correspond à rien retombe sur ce comportement, puis sur le bloc autonome.
+
+### Corrigé
+- **Thème enfant de Hummingbird** : le lien de l'espace client utilisait le markup du thème classic quand le thème actif est un enfant de Hummingbird (nom différent). Le thème parent est désormais pris en compte.
+- **Parcours invité : jeu de règles du client au lieu du jeu par défaut.** La page de demande calculait le jeu avant de retrouver la commande par e-mail et référence, sans le recalculer ensuite : un professionnel non connecté lisait « droit de rétractation » et quatorze jours, alors que l'envoi était validé sur son jeu — l'affichage annonçait une règle que le traitement ne suivait pas. Le jeu est désormais celui du client de la commande trouvée, comme au traitement.
+- **Identifiant HTML en double dans l'espace client** : le lien portait un `id` fixe, alors que le hook d'affichage du compte client est rendu deux fois par page sur Hummingbird (grille du contenu et barre latérale). L'identifiant, référencé nulle part, a été retiré.
+
 ## [1.4.9] — 2026-08-26
 
 ### Corrigé

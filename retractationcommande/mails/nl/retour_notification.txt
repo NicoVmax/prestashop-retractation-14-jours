@@ -1,0 +1,10 @@
+{title}
+
+Hallo {firstname} {lastname},
+
+{intro}
+
+{body}
+
+Met vriendelijke groet,
+{shop_name}

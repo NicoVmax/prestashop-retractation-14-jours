@@ -36,6 +36,9 @@ class RetractationCommandeFormulaireModuleFrontController extends ModuleFrontCon
         $isLogged = $this->context->customer->isLogged();
         $guestOrder = null;
         $guestError = null;
+        // Jeu de règles du client connecté (groupe par défaut) ; jeu par défaut
+        // pour un visiteur (le parcours invité ne connaît pas encore le client).
+        $rule = RetractationRules::forContext();
 
         // Parcours invité : vérification email + référence de commande.
         if (!$isLogged && Tools::isSubmit('submitGuestSearch')) {
@@ -47,17 +50,22 @@ class RetractationCommandeFormulaireModuleFrontController extends ModuleFrontCon
                 $guestError = $result;
             } else {
                 $guestOrder = $result;
+                // La commande désigne son client : ses règles priment sur
+                // celles du visiteur anonyme.
+                $rule = RetractationRules::forOrder($guestOrder);
             }
         }
 
         $this->context->smarty->assign([
             'rc_is_logged' => $isLogged,
-            'rc_orders' => $isLogged ? $this->getCustomerOrdersList() : [],
+            'rc_orders' => $isLogged ? $this->getCustomerOrdersList($rule['legal']) : [],
             'rc_guest_order' => $guestOrder,
             'rc_guest_error' => $guestError,
             'rc_guest_email' => Tools::getValue('guest_email', ''),
             'rc_guest_reference' => Tools::getValue('guest_reference', ''),
-            'rc_delay_days' => RetractationDelai::getDelaiJours(),
+            'rc_delay_days' => $rule['days'],
+            'rc_legal' => $rule['legal'],
+            'rc_rule' => $rule,
             'rc_login_url' => $this->context->link->getPageLink('authentication', true, null,
                 'back=' . urlencode($this->context->link->getModuleLink('retractationcommande', 'formulaire', []))),
         ]);
@@ -68,8 +76,9 @@ class RetractationCommandeFormulaireModuleFrontController extends ModuleFrontCon
     public function getBreadcrumbLinks()
     {
         $breadcrumb = parent::getBreadcrumbLinks();
+        $rule = RetractationRules::forContext();
         $breadcrumb['links'][] = [
-            'title' => Configuration::get('RETRACTATION_LINK_LABEL') ?: $this->module->l('Droit de rétractation', 'formulaire'),
+            'title' => $rule['link_label'] ?: ($rule['legal'] ? $this->module->l('Droit de rétractation', 'formulaire') : $rule['form_title']),
             'url' => $this->context->link->getModuleLink('retractationcommande', 'formulaire', []),
         ];
 
@@ -82,7 +91,7 @@ class RetractationCommandeFormulaireModuleFrontController extends ModuleFrontCon
      * de rétractation en cours (badge de suivi). Les commandes hors délai
      * ou non concernées ne sont pas listées.
      */
-    protected function getCustomerOrdersList()
+    protected function getCustomerOrdersList($legal = true)
     {
         $list = [];
         foreach (Order::getCustomerOrders((int) $this->context->customer->id) as $row) {
@@ -102,7 +111,7 @@ class RetractationCommandeFormulaireModuleFrontController extends ModuleFrontCon
                 'total' => RetractationRequest::formatPrice($order->total_paid_tax_incl, new Currency((int) $order->id_currency)),
                 'eligible' => $eligibility['eligible'],
                 'deadline_text' => $eligibility['deadline_text'],
-                'status_label' => $existing ? $this->module->getStatusLabel($existing['status']) : '',
+                'status_label' => $existing ? $this->module->getStatusLabel($existing['status'], $legal) : '',
                 'token' => $this->module->getOrderToken($order),
             ];
         }

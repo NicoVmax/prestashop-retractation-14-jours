@@ -1,0 +1,10 @@
+{title}
+
+Olá {firstname} {lastname},
+
+{intro}
+
+{body}
+
+Com os melhores cumprimentos,
+{shop_name}

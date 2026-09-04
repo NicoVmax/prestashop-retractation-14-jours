@@ -2,24 +2,46 @@
  * Page "Exercer mon droit de rétractation" (lien footer).
  * Étape 1 : identification (commandes du client connecté, ou email + référence en invité).
  * Étape 2 : la modal de confirmation (formulaire type), via le JS du module.
+ * Le vocabulaire suit le jeu de règles du client : légal (rc_legal) ou
+ * commercial (jeu par groupe : titre, intitulé et conditions du marchand).
  *}
 {extends file='page.tpl'}
 
 {block name='page_title'}
-  {l s='Exercer mon droit de rétractation' mod='retractationcommande'}
+  {if $rc_legal}
+    {l s='Exercer mon droit de rétractation' mod='retractationcommande'}
+  {else}
+    {$rc_rule.form_title}
+  {/if}
 {/block}
 
 {block name='page_content'}
   <div class="container"><div class="retractation-page">
-    <p>
-      {l s='Conformément aux articles L221-18 et suivants du Code de la consommation, vous disposez d\'un délai de' mod='retractationcommande'}
-      <strong>{$rc_delay_days} {l s='jours' mod='retractationcommande'}</strong>
-      {l s='à compter du lendemain de la livraison pour vous rétracter, sans avoir à motiver votre décision. Si ce délai expire un samedi, un dimanche ou un jour férié, il est prolongé jusqu\'au premier jour ouvrable suivant.' mod='retractationcommande'}
-    </p>
+    {if $rc_legal}
+      <p>
+        {l s='Conformément aux articles L221-18 et suivants du Code de la consommation, vous disposez d\'un délai de' mod='retractationcommande'}
+        <strong>{$rc_delay_days} {l s='jours' mod='retractationcommande'}</strong>
+        {l s='à compter du lendemain de la livraison pour vous rétracter, sans avoir à motiver votre décision. Si ce délai expire un samedi, un dimanche ou un jour férié, il est prolongé jusqu\'au premier jour ouvrable suivant.' mod='retractationcommande'}
+      </p>
+    {elseif $rc_rule.form_intro}
+      <p>{$rc_rule.form_intro|escape:'html'|nl2br nofilter}</p>
+    {else}
+      <p>
+        {l s='Vous disposez de' mod='retractationcommande'}
+        <strong>{$rc_delay_days} {l s='jours' mod='retractationcommande'}</strong>
+        {l s='à compter de la livraison pour demander un retour.' mod='retractationcommande'}
+      </p>
+    {/if}
 
     {if $rc_is_logged}
       {* ---------- Client connecté : commandes dans le délai ou suivies ---------- *}
-      <h2 class="h3">{l s='Vos commandes éligibles à la rétractation' mod='retractationcommande'}</h2>
+      <h2 class="h3">
+        {if $rc_legal}
+          {l s='Vos commandes éligibles à la rétractation' mod='retractationcommande'}
+        {else}
+          {l s='Vos commandes éligibles à un retour' mod='retractationcommande'}
+        {/if}
+      </h2>
       {if $rc_orders|count}
         <table class="table table-striped retractation-orders-table">
           <thead>
@@ -27,7 +49,7 @@
               <th>{l s='Référence' mod='retractationcommande'}</th>
               <th>{l s='Date' mod='retractationcommande'}</th>
               <th>{l s='Total' mod='retractationcommande'}</th>
-              <th>{l s='Rétractation' mod='retractationcommande'}</th>
+              <th>{if $rc_legal}{l s='Rétractation' mod='retractationcommande'}{else}{l s='Retour' mod='retractationcommande'}{/if}</th>
             </tr>
           </thead>
           <tbody>
@@ -44,7 +66,7 @@
                     <a href="#" class="retractation-btn cssTrans btn btn-secondary"
                        data-id-order="{$o.id_order|intval}"
                        data-rtoken="{$o.token}">
-                      {l s='Se rétracter' mod='retractationcommande'}
+                      {if $rc_legal}{l s='Se rétracter' mod='retractationcommande'}{else}{l s='Demander un retour' mod='retractationcommande'}{/if}
                     </a>
                     {if $o.deadline_text}
                       <div class="retractation-deadline-hint">{$o.deadline_text}</div>
@@ -57,7 +79,11 @@
         </table>
       {else}
         <p class="alert alert-info">
-          {l s='Aucune de vos commandes n\'est actuellement éligible à la rétractation (délai légal expiré ou commandes non concernées).' mod='retractationcommande'}
+          {if $rc_legal}
+            {l s='Aucune de vos commandes n\'est actuellement éligible à la rétractation (délai légal expiré ou commandes non concernées).' mod='retractationcommande'}
+          {else}
+            {l s='Aucune de vos commandes n\'est actuellement éligible à un retour (délai expiré ou commandes non concernées).' mod='retractationcommande'}
+          {/if}
         </p>
       {/if}
     {else}
@@ -120,9 +146,14 @@
       {/if}
     {/if}
 
-    <hr>
-    <p class="retractation-legal">
-      {l s='Le droit de rétractation ne s\'applique pas à certains contrats (art. L221-28 C. conso : biens sur mesure ou personnalisés, biens périssables, biens descellés pour raison d\'hygiène, etc.). Après dépôt, votre demande est vérifiée par notre service client qui vous transmet la procédure de retour. Le remboursement intervient au plus tard 14 jours après récupération du bien ou réception de la preuve d\'expédition, par le même moyen de paiement. Les frais de renvoi restent à votre charge.' mod='retractationcommande'}
-    </p>
+    {if $rc_legal}
+      <hr>
+      <p class="retractation-legal">
+        {l s='Le droit de rétractation ne s\'applique pas à certains contrats (art. L221-28 C. conso : biens sur mesure ou personnalisés, biens périssables, biens descellés pour raison d\'hygiène, etc.). Après dépôt, votre demande est vérifiée par notre service client qui vous transmet la procédure de retour. Le remboursement intervient au plus tard 14 jours après récupération du bien ou réception de la preuve d\'expédition, par le même moyen de paiement. Les frais de renvoi restent à votre charge.' mod='retractationcommande'}
+      </p>
+    {elseif $rc_rule.conditions_text}
+      <hr>
+      <div class="retractation-legal">{$rc_rule.conditions_text nofilter}</div>
+    {/if}
   </div></div>
 {/block}

@@ -12,6 +12,8 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+require_once __DIR__ . '/RetractationRules.php';
+
 class RetractationRequest extends ObjectModel
 {
     const STATUS_PENDING = 'pending';     // À vérifier par le SAV
@@ -484,8 +486,11 @@ class RetractationRequest extends ObjectModel
         $result['delivery_date'] = $deliveryDate;
         $result['shipping_phase'] = $delivered ? 'delivered' : (self::isShipped($order) ? 'shipped' : 'pending');
 
+        // Délai du jeu de règles du client (groupe par défaut), pas la config globale.
+        $days = RetractationRules::forOrder($order)['days'];
+
         if ($delivered) {
-            $deadline = RetractationDelai::getDeadline($deliveryDate);
+            $deadline = RetractationDelai::getDeadline($deliveryDate, $days);
             $result['deadline'] = $deadline;
             $result['deadline_text'] = sprintf(
                 Context::getContext()->getTranslator()->trans('jusqu\'au %s inclus', [], 'Modules.Retractationcommande.Shop'),
@@ -509,7 +514,7 @@ class RetractationRequest extends ObjectModel
                     [],
                     'Modules.Retractationcommande.Shop'
                 ),
-                RetractationDelai::getDelaiJours()
+                $days
             );
         }
 
@@ -526,8 +531,9 @@ class RetractationRequest extends ObjectModel
      */
     public static function getExcludedProducts(Order $order)
     {
-        $excludedProducts = array_filter(array_map('intval', explode(',', (string) Configuration::get('RETRACTATION_EXCLUDED_PRODUCTS'))));
-        $excludedCats = array_filter(array_map('intval', explode(',', (string) Configuration::get('RETRACTATION_EXCLUDED_CATS'))));
+        $rule = RetractationRules::forOrder($order);
+        $excludedProducts = array_filter(array_map('intval', explode(',', $rule['excluded_products'])));
+        $excludedCats = array_filter(array_map('intval', explode(',', $rule['excluded_cats'])));
 
         if (!$excludedProducts && !$excludedCats) {
             return [];
@@ -577,8 +583,10 @@ class RetractationRequest extends ObjectModel
         $orderReturn->id_customer = (int) $order->id_customer;
         $orderReturn->id_order = (int) $order->id;
         $orderReturn->state = RetractationCommande::OR_STATE_WAITING_CONFIRMATION;
-        $orderReturn->question = 'Rétractation légale (art. L221-18 C. conso) — demande déposée le '
-            . date('d/m/Y') . ' via l\'espace client.'
+        $orderReturn->question = (RetractationRules::forOrder($order)['legal']
+                ? 'Rétractation légale (art. L221-18 C. conso)'
+                : 'Retour commercial (règles du groupe client)')
+            . ' — demande déposée le ' . date('d/m/Y') . ' via l\'espace client.'
             . ($this->message ? '<br>Motif du client : ' . $this->message : '');
         $orderReturn->add();
         $orderReturn->addReturnDetail($orderDetailList, $productQtyList, [], []);

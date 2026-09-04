@@ -1,0 +1,10 @@
+{title}
+
+Salve {firstname} {lastname},
+
+{intro}
+
+{body}
+
+Cordiali saluti,
+{shop_name}

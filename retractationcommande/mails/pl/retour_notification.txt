@@ -1,0 +1,10 @@
+{title}
+
+Dzień dobry {firstname} {lastname},
+
+{intro}
+
+{body}
+
+Z poważaniem,
+{shop_name}

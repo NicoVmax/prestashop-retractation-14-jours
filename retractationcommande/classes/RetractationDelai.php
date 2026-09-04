@@ -19,29 +19,35 @@ class RetractationDelai
     const DELAI_JOURS = 14; // minimum légal — non réductible
 
     /**
-     * Durée du délai en jours : 14 minimum (loi), extensible par le marchand
-     * via la configuration (un délai plus long est toujours permis).
+     * Durée du délai en jours.
+     *  - sans argument : jeu par défaut (droit du consommateur), 14 minimum,
+     *    extensible par le marchand via la configuration ;
+     *  - avec un nombre : délai d'un jeu par groupe (politique commerciale,
+     *    pas de plancher légal), 0 si non renseigné.
      */
-    public static function getDelaiJours()
+    public static function getDelaiJours($days = null)
     {
-        $days = (int) Configuration::get('RETRACTATION_DELAY_DAYS');
+        if ($days !== null) {
+            return max(0, (int) $days);
+        }
 
-        return max(self::DELAI_JOURS, $days);
+        return max(self::DELAI_JOURS, (int) Configuration::get('RETRACTATION_DELAY_DAYS'));
     }
 
     /**
      * Date limite légale de rétractation à partir de la date de livraison.
      *
      * @param string|DateTime $deliveryDate
+     * @param int|null $days délai du jeu applicable (null : jeu par défaut)
      *
      * @return DateTime fin du délai (dernier jour à 23:59:59)
      */
-    public static function getDeadline($deliveryDate)
+    public static function getDeadline($deliveryDate, $days = null)
     {
         $start = ($deliveryDate instanceof DateTime) ? clone $deliveryDate : new DateTime($deliveryDate);
         $deadline = clone $start;
         // Décompte à partir du lendemain : J+1 … J+N => dernier jour = J + N
-        $deadline->modify('+' . self::getDelaiJours() . ' days');
+        $deadline->modify('+' . self::getDelaiJours($days) . ' days');
 
         while (self::isNonWorkingDay($deadline)) {
             $deadline->modify('+1 day');

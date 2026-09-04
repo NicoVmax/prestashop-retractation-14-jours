@@ -39,7 +39,7 @@ class RetractationCommande extends Module
     {
         $this->name = 'retractationcommande';
         $this->tab = 'administration';
-        $this->version = '1.4.9';
+        $this->version = '1.5.0';
         $this->author = 'ZM40';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = ['min' => '1.7.6.0', 'max' => '9.99.99'];
@@ -99,10 +99,10 @@ class RetractationCommande extends Module
         foreach ([
             'RETRACTATION_SAV_EMAIL', 'RETRACTATION_CREATE_ORDER_RETURN', 'RETRACTATION_ALLOW_UNDELIVERED',
             'RETRACTATION_HIDE_NATIVE_FORM', 'RETRACTATION_DELAY_DAYS', 'RETRACTATION_LINK_LABEL',
-            'RETRACTATION_SHOW_FOOTER_LINK', 'RETRACTATION_DELIVERED_STATES', 'RETRACTATION_SHIPPED_STATES', 'RETRACTATION_BLOCKED_STATES',
+            'RETRACTATION_SHOW_FOOTER_LINK', 'RETRACTATION_FOOTER_TARGET', 'RETRACTATION_DELIVERED_STATES', 'RETRACTATION_SHIPPED_STATES', 'RETRACTATION_BLOCKED_STATES',
             'RETRACTATION_EXCLUDED_CATS', 'RETRACTATION_EXCLUDED_PRODUCTS', 'RETRACTATION_PROCEDURE_TEXT',
             'RETRACTATION_CUSTOM_CSS', 'RETRACTATION_ALLOW_PHOTOS', 'RETRACTATION_RETURN_ADDRESS',
-            'RETRACTATION_RETURN_INSTRUCTIONS',
+            'RETRACTATION_RETURN_INSTRUCTIONS', RetractationRules::CONFIG_KEY,
         ] as $key) {
             Configuration::deleteByName($key);
         }
@@ -374,6 +374,7 @@ class RetractationCommande extends Module
                 Configuration::updateValue('RETRACTATION_DELAY_DAYS', $days);
                 Configuration::updateValue('RETRACTATION_LINK_LABEL', trim((string) Tools::getValue('RETRACTATION_LINK_LABEL')) ?: 'Exercer mon droit de rétractation');
                 Configuration::updateValue('RETRACTATION_SHOW_FOOTER_LINK', (int) Tools::getValue('RETRACTATION_SHOW_FOOTER_LINK'));
+                Configuration::updateValue('RETRACTATION_FOOTER_TARGET', trim(strip_tags((string) Tools::getValue('RETRACTATION_FOOTER_TARGET'))));
                 Configuration::updateValue('RETRACTATION_CREATE_ORDER_RETURN', (int) Tools::getValue('RETRACTATION_CREATE_ORDER_RETURN'));
                 Configuration::updateValue('RETRACTATION_ALLOW_UNDELIVERED', (int) Tools::getValue('RETRACTATION_ALLOW_UNDELIVERED'));
                 Configuration::updateValue('RETRACTATION_HIDE_NATIVE_FORM', (int) Tools::getValue('RETRACTATION_HIDE_NATIVE_FORM'));
@@ -405,13 +406,22 @@ class RetractationCommande extends Module
             $output .= $this->displayConfirmation($this->l('Mapping des statuts enregistré.'));
         }
 
+        if (Tools::isSubmit('submitRetractationGroups')) {
+            $output .= $this->processGroupsSubmit();
+        }
+
         // Sauvegarde = bon moment pour rafraîchir le feed ZM40 (UX : un nouveau
         // module publié apparaît dès la prochaine ouverture).
-        if (Tools::isSubmit('submitRetractationConfig') || Tools::isSubmit('submitRetractationMapping')) {
+        if (Tools::isSubmit('submitRetractationConfig') || Tools::isSubmit('submitRetractationMapping') || Tools::isSubmit('submitRetractationGroups')) {
             Zm40CommonRc::clearFeedCache();
         }
 
-        $activeTab = Tools::isSubmit('submitRetractationMapping') ? 'rc-tab-mapping' : 'rc-tab-config';
+        $activeTab = 'rc-tab-config';
+        if (Tools::isSubmit('submitRetractationMapping')) {
+            $activeTab = 'rc-tab-mapping';
+        } elseif (Tools::isSubmit('submitRetractationGroups')) {
+            $activeTab = 'rc-tab-groups';
+        }
 
         return $output
             . $this->renderAdminHeader()
@@ -654,6 +664,7 @@ HTML;
         $tabs = [
             ['id' => 'rc-tab-config', 'label' => $this->l('Configuration'), 'icon' => 'icon-cogs', 'content' => $this->renderConfigForm()],
             ['id' => 'rc-tab-mapping', 'label' => $this->l('Mapping des statuts'), 'icon' => 'icon-sitemap', 'content' => $this->renderMappingTab()],
+            ['id' => 'rc-tab-groups', 'label' => $this->l('Règles par groupe'), 'icon' => 'icon-group', 'content' => $this->renderGroupsTab()],
             ['id' => 'rc-tab-cgv', 'label' => $this->l('Clause CGV'), 'icon' => 'icon-file-text', 'content' => $this->renderCgvPanel()],
         ];
 
@@ -725,6 +736,12 @@ HTML;
                             ['id' => 'sfl_on', 'value' => 1, 'label' => $this->l('Oui')],
                             ['id' => 'sfl_off', 'value' => 0, 'label' => $this->l('Non')],
                         ],
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->l('Bloc du pied de page où insérer le lien'),
+                        'name' => 'RETRACTATION_FOOTER_TARGET',
+                        'desc' => $this->l('Facultatif. Sélecteur CSS de la liste de liens visée, par exemple #footer_linklist_2 ul (bloc « Mon entreprise ») ou .ps-customeraccountlinks ul (bloc « Votre compte »). Laissé vide, le lien est ajouté à la dernière liste de liens CMS du pied de page, par convention le bloc légal. Si le sélecteur ne correspond à rien sur la page, ce comportement par défaut s\'applique.'),
                     ],
                     [
                         'type' => 'text',
@@ -845,6 +862,7 @@ HTML;
         $helper->submit_action = 'submitRetractationConfig';
         $helper->fields_value = [
             'RETRACTATION_SHOW_FOOTER_LINK' => Tools::getValue('RETRACTATION_SHOW_FOOTER_LINK', Configuration::get('RETRACTATION_SHOW_FOOTER_LINK')),
+            'RETRACTATION_FOOTER_TARGET' => Tools::getValue('RETRACTATION_FOOTER_TARGET', Configuration::get('RETRACTATION_FOOTER_TARGET')),
             'RETRACTATION_LINK_LABEL' => Tools::getValue('RETRACTATION_LINK_LABEL', Configuration::get('RETRACTATION_LINK_LABEL')),
             'RETRACTATION_DELAY_DAYS' => Tools::getValue('RETRACTATION_DELAY_DAYS', Configuration::get('RETRACTATION_DELAY_DAYS')),
             'RETRACTATION_SAV_EMAIL' => Tools::getValue('RETRACTATION_SAV_EMAIL', Configuration::get('RETRACTATION_SAV_EMAIL')),
@@ -970,11 +988,15 @@ HTML;
      * « chips ». Stocke des IDs en CSV dans le champ caché RETRACTATION_EXCLUDED_PRODUCTS.
      * L'endpoint de recherche est ajaxProcessSearchProducts() (ci-dessus).
      */
-    protected function renderProductPicker()
+    protected function renderProductPicker($name = 'RETRACTATION_EXCLUDED_PRODUCTS', $value = null)
     {
         $idLang = (int) $this->context->language->id;
-        $ids = array_filter(array_map('intval', explode(',', (string) Configuration::get('RETRACTATION_EXCLUDED_PRODUCTS'))));
+        if ($value === null) {
+            $value = (string) Configuration::get('RETRACTATION_EXCLUDED_PRODUCTS');
+        }
+        $ids = array_filter(array_map('intval', explode(',', (string) $value)));
         $csv = implode(',', $ids);
+        $name = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
 
         $chips = '';
         foreach ($ids as $id) {
@@ -1004,8 +1026,8 @@ HTML;
 .rc-chip-x:hover { color: #c0392b; }
 .rc-pp-hint { color: #888; font-size: 12px; margin-top: 6px; }
 </style>
-<div class="rc-pp" id="rc-pp" data-url="{$url}">
-    <input type="hidden" name="RETRACTATION_EXCLUDED_PRODUCTS" id="rc-pp-input" value="{$csv}">
+<div class="rc-pp" data-url="{$url}">
+    <input type="hidden" name="{$name}" class="rc-pp-input" value="{$csv}">
     <div class="rc-pp-search">
         <input type="text" class="form-control rc-search" autocomplete="off" placeholder="{$ph}">
         <div class="rc-pp-dd"></div>
@@ -1014,11 +1036,10 @@ HTML;
     <div class="rc-pp-hint">{$hint}</div>
 </div>
 <script>
-(function(){
-    var box = document.getElementById('rc-pp');
-    if (!box || box.getAttribute('data-init')) { return; }
+document.querySelectorAll('.rc-pp').forEach(function(box){
+    if (box.getAttribute('data-init')) { return; }
     box.setAttribute('data-init', '1');
-    var input = document.getElementById('rc-pp-input');
+    var input = box.querySelector('.rc-pp-input');
     var search = box.querySelector('.rc-search');
     var dd = box.querySelector('.rc-pp-dd');
     var chips = box.querySelector('.rc-pp-chips');
@@ -1076,9 +1097,126 @@ HTML;
         }, 250);
     });
     document.addEventListener('click', function(e){ if (!box.contains(e.target)) { dd.style.display = 'none'; } });
-})();
+});
 </script>
 HTML;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Règles par groupe de clients                                        */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Enregistre les jeux propres : seuls les groupes en mode « jeu propre »
+     * sont stockés, les autres suivent le jeu par défaut.
+     */
+    protected function processGroupsSubmit()
+    {
+        $posted = Tools::getValue('rc_group');
+        $rules = [];
+        foreach (is_array($posted) ? $posted : [] as $idGroup => $g) {
+            if (!is_array($g) || ($g['mode'] ?? '') !== 'custom') {
+                continue;
+            }
+            $cats = $g['excluded_cats'] ?? [];
+            $rules[(int) $idGroup] = [
+                'days' => max(0, (int) ($g['days'] ?? 0)),
+                'link_label' => trim((string) ($g['link_label'] ?? '')),
+                'form_title' => trim((string) ($g['form_title'] ?? '')),
+                'form_intro' => trim((string) ($g['form_intro'] ?? '')),
+                'conditions_text' => (string) ($g['conditions_text'] ?? ''),
+                'procedure_text' => (string) ($g['procedure_text'] ?? ''),
+                'excluded_cats' => $this->sanitizeIdList(implode(',', is_array($cats) ? $cats : [])),
+                'excluded_products' => $this->sanitizeIdList($g['excluded_products'] ?? ''),
+            ];
+        }
+        RetractationRules::saveAll($rules);
+
+        return $this->displayConfirmation($this->l('Règles par groupe enregistrées.'));
+    }
+
+    /**
+     * Onglet « Règles par groupe » : un bloc par groupe de clients, « suit le
+     * jeu par défaut » ou jeu propre (les champs n'apparaissent que dans ce cas).
+     */
+    protected function renderGroupsTab()
+    {
+        $idLang = (int) $this->context->language->id;
+        $rules = RetractationRules::getAll();
+        $action = AdminController::$currentIndex . '&configure=' . $this->name . '&token=' . Tools::getAdminTokenLite('AdminModules');
+
+        $catOptions = '';
+        foreach ((array) Category::getCategories($idLang, false, false) as $c) {
+            if ((int) $c['level_depth'] < 1) {
+                continue;
+            }
+            $catOptions .= '<option value="' . (int) $c['id_category'] . '" data-depth="' . (int) $c['level_depth'] . '">'
+                . str_repeat('&nbsp;&nbsp;&nbsp;', max(0, (int) $c['level_depth'] - 1))
+                . htmlspecialchars($c['name'], ENT_QUOTES, 'UTF-8') . '</option>';
+        }
+
+        $html = '<form method="post" action="' . $action . '" id="rc-groups-form" class="form-horizontal">';
+        $html .= '<div class="alert alert-info"><p>'
+            . $this->l('Le droit de rétractation de quatorze jours est un droit du consommateur : un professionnel n\'en a pas. Ce qui s\'applique à lui, c\'est votre politique commerciale. Donnez un jeu de règles propre aux groupes concernés (délai, libellés, textes, exclusions) ; les autres suivent le jeu par défaut de l\'onglet Configuration.')
+            . '</p><p>' . $this->l('Le jeu d\'un client est choisi sur son groupe par défaut, le même critère que PrestaShop utilise pour l\'affichage des prix.') . '</p></div>';
+
+        foreach (Group::getGroups($idLang) as $group) {
+            $id = (int) $group['id_group'];
+            $own = isset($rules[$id]) && is_array($rules[$id]) ? $rules[$id] : [];
+            $custom = (bool) $own;
+            $p = 'rc_group[' . $id . ']';
+            $v = function ($key) use ($own) {
+                return htmlspecialchars((string) ($own[$key] ?? ''), ENT_QUOTES, 'UTF-8');
+            };
+            $selectedCats = array_filter(array_map('intval', explode(',', (string) ($own['excluded_cats'] ?? ''))));
+            $catSelect = $catOptions;
+            foreach ($selectedCats as $idCat) {
+                $catSelect = str_replace('value="' . $idCat . '"', 'value="' . $idCat . '" selected', $catSelect);
+            }
+
+            $html .= '<div class="panel rc-grp" data-group="' . $id . '">'
+                . '<div class="panel-heading"><i class="icon-group"></i> ' . htmlspecialchars($group['name'], ENT_QUOTES, 'UTF-8') . ' <span class="badge">#' . $id . '</span></div>'
+                . '<div class="form-group"><label class="control-label col-lg-3">' . $this->l('Règles') . '</label><div class="col-lg-9">'
+                . '<select name="' . $p . '[mode]" class="rc-grp-mode form-control fixed-width-xl">'
+                . '<option value="default"' . ($custom ? '' : ' selected') . '>' . $this->l('Suit le jeu par défaut') . '</option>'
+                . '<option value="custom"' . ($custom ? ' selected' : '') . '>' . $this->l('Jeu propre') . '</option>'
+                . '</select></div></div>'
+                . '<div class="rc-grp-fields"' . ($custom ? '' : ' style="display:none"') . '>'
+                . $this->groupField($this->l('Délai (jours)'), '<input type="number" min="0" class="form-control fixed-width-sm" name="' . $p . '[days]" value="' . (int) ($own['days'] ?? 30) . '">',
+                    $this->l('Délai de retour après livraison. Pas de minimum légal pour un jeu propre ; 0 pour reprendre le délai par défaut.'))
+                . $this->groupField($this->l('Libellé du lien (footer + espace client)'), '<input type="text" class="form-control" name="' . $p . '[link_label]" value="' . $v('link_label') . '">',
+                    $this->l('Ex. « Demander un retour commercial ». Laissez vide pour masquer le lien à ce groupe (retours traités par contact).'))
+                . $this->groupField($this->l('Titre du formulaire'), '<input type="text" class="form-control" name="' . $p . '[form_title]" value="' . $v('form_title') . '">',
+                    $this->l('Titre de la page et de la fenêtre de demande. Vide : reprend le libellé du lien.'))
+                . $this->groupField($this->l('Intitulé du formulaire'), '<textarea rows="3" class="form-control" name="' . $p . '[form_intro]">' . $v('form_intro') . '</textarea>',
+                    $this->l('Texte d\'introduction affiché en haut de la page de demande (ex. « Retour possible sous trente jours sur pièce non montée, dans son emballage d\'origine »).'))
+                . $this->groupField($this->l('Conditions (affichées avant l\'envoi)'), '<textarea rows="5" class="form-control rte autoload_rte" id="rc_group_' . $id . '_conditions" name="' . $p . '[conditions_text]">' . $v('conditions_text') . '</textarea>',
+                    $this->l('Vos conditions de retour, affichées sous le formulaire avant confirmation.'))
+                . $this->groupField($this->l('Procédure de retour (email d\'acceptation)'), '<textarea rows="5" class="form-control rte autoload_rte" id="rc_group_' . $id . '_procedure" name="' . $p . '[procedure_text]">' . $v('procedure_text') . '</textarea>',
+                    $this->l('Texte envoyé quand le SAV valide la demande. Vide : reprend la procédure par défaut.'))
+                . $this->groupField($this->l('Catégories exclues'), '<select multiple size="8" class="form-control" name="' . $p . '[excluded_cats][]">' . $catSelect . '</select>',
+                    $this->l('Ctrl/Cmd + clic pour une sélection multiple. Les exclusions du jeu par défaut ne s\'appliquent pas à ce groupe.'))
+                . $this->groupField($this->l('Produits exclus'), $this->renderProductPicker($p . '[excluded_products]', (string) ($own['excluded_products'] ?? '')), '')
+                . '</div></div>';
+        }
+
+        $html .= '<div class="panel-footer"><button type="submit" name="submitRetractationGroups" class="btn btn-default pull-right">'
+            . '<i class="process-icon-save"></i> ' . $this->l('Enregistrer') . '</button></div>';
+        $html .= '</form>';
+        $html .= '<script type="text/javascript">
+document.querySelectorAll("#rc-groups-form .rc-grp-mode").forEach(function(sel){
+  var fields = sel.closest(".rc-grp").querySelector(".rc-grp-fields");
+  sel.addEventListener("change", function(){ fields.style.display = sel.value === "custom" ? "" : "none"; });
+});
+</script>';
+
+        return $html;
+    }
+
+    protected function groupField($label, $control, $desc)
+    {
+        return '<div class="form-group"><label class="control-label col-lg-3">' . $label . '</label><div class="col-lg-9">'
+            . $control . ($desc !== '' ? '<p class="help-block">' . $desc . '</p>' : '') . '</div></div>';
     }
 
     /**
@@ -1179,6 +1317,7 @@ HTML;
         $maps = $isLogged
             ? $this->getOrdersMaps((int) $this->context->customer->id)
             : ['eligible' => [], 'statuses' => []];
+        $legal = RetractationRules::forContext()['legal'];
 
         Media::addJsDef([
             'retractationConfig' => [
@@ -1187,11 +1326,11 @@ HTML;
                 'statuses' => $maps['statuses'],
                 'hideNativeForm' => (bool) Configuration::get('RETRACTATION_HIDE_NATIVE_FORM'),
                 'labels' => [
-                    'button' => $this->l('Se rétracter'),
+                    'button' => $legal ? $this->l('Se rétracter') : $this->l('Demander un retour'),
                     'loading' => $this->l('Chargement…'),
                     'error' => $this->l('Une erreur est survenue. Merci de réessayer ou de contacter le service client.'),
-                    'pending' => $this->getStatusLabel(RetractationRequest::STATUS_PENDING),
-                    'success_title' => $this->l('Rétractation enregistrée'),
+                    'pending' => $this->getStatusLabel(RetractationRequest::STATUS_PENDING, $legal),
+                    'success_title' => $legal ? $this->l('Rétractation enregistrée') : $this->l('Demande de retour enregistrée'),
                     'download_pdf' => $this->l('Télécharger l\'accusé de réception (PDF)'),
                 ],
             ],
@@ -1200,16 +1339,17 @@ HTML;
 
     /**
      * Libellé client d'un statut de demande (affiché sur la ligne de commande).
+     * Vocabulaire légal (jeu par défaut) ou commercial (jeu par groupe).
      */
-    public function getStatusLabel($status)
+    public function getStatusLabel($status, $legal = true)
     {
         switch ($status) {
             case RetractationRequest::STATUS_PENDING:
-                return $this->l('Rétractation en cours de vérification');
+                return $legal ? $this->l('Rétractation en cours de vérification') : $this->l('Demande de retour en cours de vérification');
             case RetractationRequest::STATUS_ACCEPTED:
-                return $this->l('Rétractation validée — retour en cours');
+                return $legal ? $this->l('Rétractation validée — retour en cours') : $this->l('Retour accepté — en cours');
             case RetractationRequest::STATUS_REFUNDED:
-                return $this->l('Rétractation remboursée');
+                return $legal ? $this->l('Rétractation remboursée') : $this->l('Retour remboursé');
             default:
                 return '';
         }
@@ -1227,11 +1367,14 @@ HTML;
 
         // Lien visible pour tous les visiteurs, connectés ou non : le
         // formulaire gère le parcours invité et l'ordonnance n°2026-2 exige
-        // une fonctionnalité visible sur tout le site.
-        if (Configuration::get('RETRACTATION_SHOW_FOOTER_LINK')) {
+        // une fonctionnalité visible sur tout le site. Le libellé suit le jeu
+        // de règles du client connecté ; vide = lien masqué pour son groupe.
+        $rule = RetractationRules::forContext();
+        if (Configuration::get('RETRACTATION_SHOW_FOOTER_LINK') && $rule['link_label'] !== '') {
             $this->context->smarty->assign([
-                'retractation_link_label' => Configuration::get('RETRACTATION_LINK_LABEL'),
+                'retractation_link_label' => $rule['link_label'],
                 'retractation_link_url' => $this->context->link->getModuleLink($this->name, 'formulaire', []),
+                'retractation_footer_target' => (string) Configuration::get('RETRACTATION_FOOTER_TARGET'),
             ]);
             $out .= $this->display(__FILE__, 'views/templates/hook/footer-link.tpl');
         }
@@ -1261,18 +1404,27 @@ HTML;
      */
     public function hookDisplayCustomerAccount($params)
     {
+        $rule = RetractationRules::forContext();
+        if ($rule['link_label'] === '') {
+            return '';
+        }
+
         // Le thème Hummingbird (PS 8.1+/9) utilise une structure de menu compte
         // différente (.account-menu__link) du thème classic (.col-* / .link-item).
-        $themeName = '';
-        if (isset($this->context->shop->theme) && is_object($this->context->shop->theme)
-            && method_exists($this->context->shop->theme, 'getName')) {
-            $themeName = (string) $this->context->shop->theme->getName();
+        // Un thème enfant de Hummingbird porte un autre nom : regarder aussi le parent.
+        $themeNames = [];
+        $theme = isset($this->context->shop->theme) ? $this->context->shop->theme : null;
+        if (is_object($theme) && method_exists($theme, 'getName')) {
+            $themeNames[] = (string) $theme->getName();
+        }
+        if (is_object($theme) && method_exists($theme, 'get')) {
+            $themeNames[] = (string) $theme->get('parent');
         }
 
         $this->context->smarty->assign([
-            'retractation_link_label' => Configuration::get('RETRACTATION_LINK_LABEL'),
+            'retractation_link_label' => $rule['link_label'],
             'retractation_link_url' => $this->context->link->getModuleLink($this->name, 'formulaire', []),
-            'retractation_account_menu_style' => (Tools::strtolower($themeName) === 'hummingbird'),
+            'retractation_account_menu_style' => in_array('hummingbird', array_map('strtolower', $themeNames), true),
         ]);
 
         return $this->display(__FILE__, 'views/templates/hook/customer-account.tpl');
@@ -1291,13 +1443,17 @@ HTML;
         $eligibility = RetractationRequest::getOrderEligibility($order);
 
         $existing = RetractationRequest::getByOrder((int) $order->id);
+        $rule = RetractationRules::forOrder($order);
         $this->context->smarty->assign([
             'retractation_eligible' => $eligibility['eligible'],
             'retractation_deadline_text' => $eligibility['deadline_text'],
             'retractation_id_order' => (int) $order->id,
             'retractation_token' => $this->getOrderToken($order),
             'retractation_existing' => $existing,
-            'retractation_existing_label' => $existing ? $this->getStatusLabel($existing['status']) : '',
+            'retractation_existing_label' => $existing ? $this->getStatusLabel($existing['status'], $rule['legal']) : '',
+            'retractation_legal' => $rule['legal'],
+            'retractation_days' => (int) $rule['days'],
+            'retractation_form_title' => $rule['form_title'],
         ]);
 
         return $this->display(__FILE__, 'views/templates/hook/order-detail.tpl');
@@ -1314,6 +1470,7 @@ HTML;
     {
         $eligible = [];
         $statuses = [];
+        $legal = RetractationRules::forCustomer($idCustomer)['legal'];
         foreach (Order::getCustomerOrders($idCustomer) as $row) {
             $order = new Order((int) $row['id_order']);
             if (!Validate::isLoadedObject($order)) {
@@ -1322,7 +1479,7 @@ HTML;
 
             $existing = RetractationRequest::getByOrder((int) $order->id);
             if ($existing) {
-                $statuses[(int) $order->id] = $this->getStatusLabel($existing['status']);
+                $statuses[(int) $order->id] = $this->getStatusLabel($existing['status'], $legal);
             }
 
             $eligibility = RetractationRequest::getOrderEligibility($order);
@@ -1339,18 +1496,18 @@ HTML;
     }
 
     /**
-     * Langue d'envoi des emails : celle de la commande si un dossier
-     * mails/<iso>/ existe, sinon anglais, sinon langue par défaut.
+     * Langue d'envoi des emails : celle de la commande si le template existe
+     * dans mails/<iso>/, sinon anglais, sinon langue par défaut.
      */
-    public static function getMailLangId($idLang)
+    public static function getMailLangId($idLang, $template = 'retractation_accuse')
     {
         $dir = _PS_MODULE_DIR_ . 'retractationcommande/mails/';
         $iso = Language::getIsoById((int) $idLang);
-        if ($iso && is_dir($dir . $iso)) {
+        if ($iso && file_exists($dir . $iso . '/' . $template . '.html')) {
             return (int) $idLang;
         }
         $en = (int) Language::getIdByIso('en');
-        if ($en && is_dir($dir . 'en')) {
+        if ($en && file_exists($dir . 'en/' . $template . '.html')) {
             return $en;
         }
 

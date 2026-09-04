@@ -255,9 +255,10 @@ class AdminRetractationController extends ModuleAdminController
             $order = new Order((int) $request->id_order);
             $customer = new Customer((int) $request->id_customer);
 
-            // Procédure (texte marchand) + adresse de retour configurée (centre
-            // logistique…) si renseignée — ajoutée au contenu sans toucher aux templates.
-            $procedure = (string) Configuration::get('RETRACTATION_PROCEDURE_TEXT');
+            // Procédure (texte du jeu de règles du client : par défaut ou par
+            // groupe) + adresse de retour configurée (centre logistique…) si
+            // renseignée — ajoutée au contenu sans toucher aux templates.
+            $procedure = (string) RetractationRules::forCustomer((int) $request->id_customer)['procedure_text'];
             $returnAddress = trim((string) Configuration::get('RETRACTATION_RETURN_ADDRESS'));
             if ($returnAddress !== '') {
                 $procedure .= '<p style="margin-top:14px"><strong>' . $this->l('Adresse de retour') . ' :</strong><br>'
@@ -417,8 +418,39 @@ class AdminRetractationController extends ModuleAdminController
             '{shop_name}' => Configuration::get('PS_SHOP_NAME'),
         ], $extraVars);
 
+        // Retour commercial (jeu par groupe) : un seul template neutre, sans
+        // mention du droit de rétractation ; titre, intro et corps selon l'étape.
+        if (!RetractationRules::forCustomer((int) $customer->id)['legal']) {
+            $refs = [$request->reference, $order->reference];
+            switch ($template) {
+                case 'retractation_annulation':
+                    $subject = $this->l('Votre demande de retour est acceptée — commande annulée avant expédition');
+                    $intro = vsprintf($this->l('Votre demande %s concernant la commande %s a été acceptée.'), $refs);
+                    $body = '<p>' . $this->l('Votre commande n\'ayant pas encore été expédiée, aucun retour de produit n\'est nécessaire : l\'expédition est annulée et le remboursement vous sera adressé par le même moyen de paiement.') . '</p>';
+                    break;
+                case 'retractation_refus':
+                    $subject = $this->l('Votre demande de retour');
+                    $intro = vsprintf($this->l('Votre demande de retour %s concernant la commande %s n\'a pas pu être acceptée.'), $refs);
+                    $body = '<p><strong>' . $this->l('Motif') . '</strong><br>' . ($vars['{reason}'] ?? '') . '</p>';
+                    break;
+                case 'retractation_remboursee':
+                    $subject = $this->l('Votre retour a été remboursé');
+                    $intro = vsprintf($this->l('Votre demande de retour %s concernant la commande %s a été remboursée.'), $refs);
+                    $body = '<p>' . $this->l('Le remboursement a été effectué par le même moyen de paiement que celui de la commande.') . '</p>';
+                    break;
+                default: // retractation_procedure
+                    $subject = $this->l('Votre demande de retour est acceptée — procédure de retour');
+                    $intro = vsprintf($this->l('Votre demande de retour %s concernant la commande %s a été vérifiée et acceptée.'), $refs);
+                    $body = (string) ($vars['{procedure}'] ?? '');
+            }
+            $template = 'retour_notification';
+            $vars['{title}'] = $subject;
+            $vars['{intro}'] = $intro;
+            $vars['{body}'] = $body;
+        }
+
         Mail::Send(
-            RetractationCommande::getMailLangId((int) $order->id_lang),
+            RetractationCommande::getMailLangId((int) $order->id_lang, $template),
             $template,
             $subject . ' - ' . $order->reference,
             $vars,

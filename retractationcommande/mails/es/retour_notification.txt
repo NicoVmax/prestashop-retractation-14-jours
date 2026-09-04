@@ -1,0 +1,10 @@
+{title}
+
+Hola {firstname} {lastname},
+
+{intro}
+
+{body}
+
+Atentamente,
+{shop_name}

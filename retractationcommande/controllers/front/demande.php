@@ -112,8 +112,11 @@ class RetractationCommandeDemandeModuleFrontController extends ModuleFrontContro
         $customer = $this->getOrderCustomer($order);
         $address = new Address((int) $order->id_address_delivery);
         $invoiceAddress = new Address((int) $order->id_address_invoice);
+        $rule = RetractationRules::forOrder($order);
 
         $this->context->smarty->assign([
+            'rc_legal' => $rule['legal'],
+            'rc_rule' => $rule,
             'rc_order' => $order,
             'rc_order_date' => Tools::displayDate($order->date_add),
             'rc_delivery_date' => $eligibility['delivered'] ? Tools::displayDate($eligibility['delivery_date']) : null,
@@ -238,17 +241,24 @@ class RetractationCommandeDemandeModuleFrontController extends ModuleFrontContro
         // Accusé de réception PDF (obligatoire : dépôt via le site, L221-21 al.3)
         // Page 2 : rappel des droits (et PDF multi-pages => affiché en icône
         // de pièce jointe par Apple Mail au lieu d'être prévisualisé en ligne).
-        $pdfHtml = $this->renderAcknowledgmentHtml($order, $request, $eligibility, $selectedProducts, $isFullOrder);
-        $pdfRightsHtml = $this->context->smarty->fetch('module:retractationcommande/views/templates/front/pdf-droits.tpl');
-        $pdfFilename = RetractationPdf::generate($pdfHtml, (int) $request->id, $pdfRightsHtml);
-        if ($pdfFilename) {
-            $request->pdf_filename = $pdfFilename;
-            $request->update();
+        // Jeu par groupe (retour commercial) : pas d'accusé légal, un email suffit.
+        $rule = RetractationRules::forOrder($order);
+        $pdfFilename = null;
+        if ($rule['legal']) {
+            $pdfHtml = $this->renderAcknowledgmentHtml($order, $request, $eligibility, $selectedProducts, $isFullOrder);
+            $pdfRightsHtml = $this->context->smarty->fetch('module:retractationcommande/views/templates/front/pdf-droits.tpl');
+            $pdfFilename = RetractationPdf::generate($pdfHtml, (int) $request->id, $pdfRightsHtml);
+            if ($pdfFilename) {
+                $request->pdf_filename = $pdfFilename;
+                $request->update();
+            }
         }
 
-        $this->sendEmails($order, $request, $pdfFilename, $selectedProducts);
+        $this->sendEmails($order, $request, $pdfFilename, $selectedProducts, $rule['legal']);
 
-        if ($phase === 'delivered') {
+        if (!$rule['legal']) {
+            $successMessage = $this->module->l('Votre demande de retour a bien été enregistrée sous la référence %s. Une confirmation vous a été envoyée par email. Notre service client va vérifier votre demande et vous transmettre la procédure de retour.', 'demande');
+        } elseif ($phase === 'delivered') {
             $successMessage = $this->module->l('Votre rétractation a bien été enregistrée sous la référence %s. Un accusé de réception vous a été envoyé par email. Notre service client va vérifier votre demande et vous transmettre la procédure de retour.', 'demande');
         } elseif ($phase === 'shipped') {
             $successMessage = $this->module->l('Votre rétractation a bien été enregistrée sous la référence %s. Un accusé de réception vous a été envoyé par email. Votre commande étant déjà expédiée, vous pouvez refuser le colis à sa présentation ou, si vous le recevez, suivre la procédure de retour que notre service client va vous transmettre.', 'demande');
@@ -356,10 +366,9 @@ class RetractationCommandeDemandeModuleFrontController extends ModuleFrontContro
     /**
      * Accusé de réception au client (+ PDF joint) et notification SAV.
      */
-    protected function sendEmails(Order $order, RetractationRequest $request, $pdfFilename, array $selectedProducts)
+    protected function sendEmails(Order $order, RetractationRequest $request, $pdfFilename, array $selectedProducts, $legal = true)
     {
         $customer = $this->getOrderCustomer($order);
-        $idLang = RetractationCommande::getMailLangId((int) $order->id_lang);
         $mailDir = _PS_MODULE_DIR_ . 'retractationcommande/mails/';
 
         $attachment = null;
@@ -379,7 +388,11 @@ class RetractationCommandeDemandeModuleFrontController extends ModuleFrontContro
         // Textes adaptés aux 3 phases : livré (retour produit), expédié
         // (colis en transit : refus/retour), non expédié (annulation).
         $phase = $request->shipping_phase ?: ((bool) $request->delivery_date ? 'delivered' : 'pending');
-        if ($phase === 'delivered') {
+        if (!$legal) {
+            // Retour commercial (jeu par groupe) : aucune mention légale.
+            $nextSteps = $this->module->l('Notre service client va vérifier votre demande selon nos conditions de retour. Si elle est acceptée, la procédure de retour vous sera transmise par email. Merci de ne pas renvoyer le produit avant de l\'avoir reçue.', 'demande');
+            $savChecklist = $this->module->l('RETOUR COMMERCIAL (règles du groupe client) — à vérifier selon vos conditions de retour, pas selon le droit de rétractation.', 'demande');
+        } elseif ($phase === 'delivered') {
             $nextSteps = $this->module->l('Notre service client va vérifier l\'éligibilité de votre demande (délai légal de 14 jours, exclusions de l\'article L221-28). Si elle est conforme, la procédure de retour vous sera transmise par email, puis le remboursement interviendra au plus tard 14 jours après récupération du bien ou réception de la preuve d\'expédition. Merci de ne pas renvoyer le produit avant d\'avoir reçu la procédure de retour.', 'demande');
             $savChecklist = $this->module->l('À vérifier : délai de 14 jours, exclusions légales (art. L221-28), produits déjà retournés.', 'demande');
         } elseif ($phase === 'shipped') {
@@ -412,11 +425,29 @@ class RetractationCommandeDemandeModuleFrontController extends ModuleFrontContro
             '{shop_name}' => Configuration::get('PS_SHOP_NAME'),
         ];
 
-        // 1) Accusé de réception client
+        // 1) Accusé de réception client (retour commercial : confirmation neutre)
+        if ($legal) {
+            $template = 'retractation_accuse';
+            $subject = $this->module->l('Accusé de réception de votre demande de rétractation', 'demande');
+        } else {
+            $template = 'retour_notification';
+            $subject = $this->module->l('Confirmation de votre demande de retour', 'demande');
+            $vars['{title}'] = $subject;
+            $vars['{intro}'] = sprintf(
+                $this->module->l('Nous avons bien reçu votre demande de retour %s concernant la commande %s du %s.', 'demande'),
+                $request->reference,
+                $order->reference,
+                Tools::displayDate($order->date_add)
+            );
+            $vars['{body}'] = '<p><strong>' . $this->module->l('Produits', 'demande') . '</strong><br>' . $vars['{products}'] . '</p>'
+                . ($request->message ? '<p><strong>' . $this->module->l('Motif', 'demande') . '</strong><br>' . $vars['{message}'] . '</p>' : '')
+                . '<p>' . $nextSteps . '</p>';
+        }
+        $idLang = RetractationCommande::getMailLangId((int) $order->id_lang, $template);
         Mail::Send(
             $idLang,
-            'retractation_accuse',
-            $this->module->l('Accusé de réception de votre demande de rétractation', 'demande') . ' - ' . $order->reference,
+            $template,
+            $subject . ' - ' . $order->reference,
             $vars,
             $customer->email,
             $customer->firstname . ' ' . $customer->lastname,
@@ -433,9 +464,11 @@ class RetractationCommandeDemandeModuleFrontController extends ModuleFrontContro
         $savEmail = Configuration::get('RETRACTATION_SAV_EMAIL') ?: Configuration::get('PS_SHOP_EMAIL');
         if ($savEmail) {
             Mail::Send(
-                $idLang,
+                RetractationCommande::getMailLangId((int) $order->id_lang, 'retractation_sav'),
                 'retractation_sav',
-                $this->module->l('Nouvelle demande de rétractation à vérifier', 'demande') . ' - ' . $order->reference,
+                ($legal
+                    ? $this->module->l('Nouvelle demande de rétractation à vérifier', 'demande')
+                    : $this->module->l('Nouvelle demande de retour commercial à vérifier', 'demande')) . ' - ' . $order->reference,
                 $vars,
                 $savEmail,
                 null,
