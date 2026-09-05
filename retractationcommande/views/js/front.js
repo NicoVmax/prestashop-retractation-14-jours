@@ -68,11 +68,21 @@
       }
       row.setAttribute('data-retractation-done', '1');
 
-      var container = row.querySelector('td.order-actions, .order-actions');
+      // classic nomme la cellule d'actions .order-actions, Hummingbird (et ses
+      // thèmes enfants, dont Cadence) .order__actions. À défaut, on se rabat
+      // sur la dernière cellule de la ligne : un <div> ajouté directement dans
+      // un <tr> n'est jamais rendu, la mise en page de tableau ne disposant
+      // que des cellules — le bouton existait alors sans être visible.
+      var container = row.querySelector('td.order-actions, .order-actions, td.order__actions, .order__actions');
       if (!container) {
-        container = document.createElement('div');
-        container.className = 'retractation-inline-actions';
-        row.appendChild(container);
+        var cells = row.querySelectorAll(':scope > td');
+        if (cells.length) {
+          container = cells[cells.length - 1];
+        } else {
+          container = document.createElement('div');
+          container.className = 'retractation-inline-actions';
+          row.appendChild(container);
+        }
       }
 
       var wrap = document.createElement('div');

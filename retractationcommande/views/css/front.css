@@ -17,7 +17,8 @@
 }
 
 /* Liens d'action compacts sur la page Mes commandes */
-.page-customer-account #content .order-actions a {
+.page-customer-account #content .order-actions a,
+.page-customer-account #content .order__actions a {
   padding: 0.125rem 0.5rem;
 }
 
