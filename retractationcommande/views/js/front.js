@@ -62,20 +62,25 @@
         return;
       }
 
-      var row = link.closest('tr') || link.closest('.order') || link.closest('article');
+      // La ligne de commande n'est un <tr> que sur classic. Hummingbird et ses
+      // thèmes enfants rendent une grille de <div>/<span> porteurs des rôles
+      // ARIA de tableau, et les versions intermédiaires un bloc .order.
+      var row = link.closest('tr, [role="row"], .order-history__row, .order, article');
       if (!row || row.getAttribute('data-retractation-done')) {
         return;
       }
       row.setAttribute('data-retractation-done', '1');
 
-      // classic nomme la cellule d'actions .order-actions, Hummingbird (et ses
-      // thèmes enfants, dont Cadence) .order__actions. À défaut, on se rabat
-      // sur la dernière cellule de la ligne : un <div> ajouté directement dans
-      // un <tr> n'est jamais rendu, la mise en page de tableau ne disposant
-      // que des cellules — le bouton existait alors sans être visible.
-      var container = row.querySelector('td.order-actions, .order-actions, td.order__actions, .order__actions');
+      // Noms de la cellule d'actions selon le thème : .order-actions (classic),
+      // .order__actions et .order-history__cell--actions (Hummingbird selon les
+      // versions). À défaut, la dernière cellule de la ligne — un <div> ajouté
+      // directement dans un <tr> n'est jamais rendu, la mise en page de tableau
+      // ne disposant que des cellules : le bouton existait sans être visible.
+      var container = row.querySelector(
+        '.order-actions, .order__actions, .order-history__cell--actions, [class*="cell--actions"]'
+      );
       if (!container) {
-        var cells = row.querySelectorAll(':scope > td');
+        var cells = row.querySelectorAll(':scope > td, :scope > [role="cell"]');
         if (cells.length) {
           container = cells[cells.length - 1];
         } else {
